@@ -12,14 +12,13 @@ import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsFileInfo;
-import io.vertx.fastdfs.api.FdfsStorage;
+import io.vertx.fastdfs.FdfsStorage;
 import io.vertx.fastdfs.exp.FdfsException;
 import io.vertx.fastdfs.options.FdfsStorageOptions;
 import io.vertx.fastdfs.utils.FdfsPacket;
@@ -37,10 +36,12 @@ import io.vertx.fastdfs.utils.FdfsUtils;
 public class FdfsStorageImpl implements FdfsStorage {
 
 	private Vertx vertx;
+	private NetSocket socket;
 	private FdfsStorageOptions options;
 
-	public FdfsStorageImpl(Vertx vertx, FdfsStorageOptions options) {
+	public FdfsStorageImpl(Vertx vertx, NetSocket socket, FdfsStorageOptions options) {
 		this.vertx = vertx;
+		this.socket = socket;
 		this.options = options;
 	}
 
@@ -650,10 +651,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	private Future<NetSocket> getConnection() {
-		return Future.future(future -> {
-			vertx.createNetClient(new NetClientOptions().setIdleTimeout((int) options.getNetworkTimeout())
-					.setConnectTimeout((int) options.getConnectTimeout())).connect(options.getAddress(), future);
-		});
+		return Future.succeededFuture(socket);
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, String fileFullPathName, String ext) {
@@ -840,6 +838,14 @@ public class FdfsStorageImpl implements FdfsStorage {
 		}
 
 		private LocalFile() {
+		}
+	}
+
+	@Override
+	public void close() {
+		if (socket != null) {
+			System.out.println("storage: close socket");
+			FdfsProtocol.closeSocket(socket);
 		}
 	}
 }

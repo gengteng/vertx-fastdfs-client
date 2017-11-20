@@ -30,57 +30,51 @@ public abstract class AbstractFdfsOptions {
 	public AbstractFdfsOptions() {
 		charset = DEFAULT_CHARSET;
 		connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+		networkTimeout = DEFAULT_NETWORK_TIMEOUT;
 		defaultExt = DEFAULT_DEFAULT_EXT;
+	}
+	
+	public AbstractFdfsOptions(AbstractFdfsOptions other) {
+		charset = other.charset;
+		connectTimeout = other.connectTimeout;
+		networkTimeout = other.networkTimeout;
+		defaultExt = other.defaultExt;
 	}
 
 	public String getCharset() {
 		return charset;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractFdfsOptions> T setCharset(String charset) {
+	public AbstractFdfsOptions setCharset(String charset) {
 		this.charset = charset;
-		return (T) this;
+		return this;
 	}
 
 	public long getConnectTimeout() {
 		return connectTimeout;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractFdfsOptions> T setConnectTimeout(long connectTimeout) {
+	public AbstractFdfsOptions setConnectTimeout(long connectTimeout) {
 		this.connectTimeout = connectTimeout;
-		return (T) this;
+		return this;
 	}
 
 	public long getNetworkTimeout() {
 		return networkTimeout;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractFdfsOptions> T setNetworkTimeout(long networkTimeout) {
+	public AbstractFdfsOptions setNetworkTimeout(long networkTimeout) {
 		this.networkTimeout = networkTimeout;
-		return (T) this;
+		return this;
 	}
 
 	public String getDefaultExt() {
 		return defaultExt;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractFdfsOptions> T setDefaultExt(String defaultExt) {
+	public AbstractFdfsOptions setDefaultExt(String defaultExt) {
 		this.defaultExt = defaultExt;
-		return (T) this;
-	}
-
-	@SuppressWarnings("unchecked")
-	public final <T extends AbstractFdfsOptions> T copyBasic(AbstractFdfsOptions other) {
-
-		this.charset = other.charset;
-		this.connectTimeout = other.connectTimeout;
-		this.defaultExt = other.defaultExt;
-
-		return (T) this;
+		return this;
 	}
 
 	public AbstractFdfsOptions fromJson(JsonObject json) {

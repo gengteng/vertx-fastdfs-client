@@ -1,14 +1,13 @@
-package io.vertx.fastdfs.api;
+package io.vertx.fastdfs;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetSocket;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
-import io.vertx.fastdfs.FdfsFileId;
-import io.vertx.fastdfs.FdfsFileInfo;
 import io.vertx.fastdfs.impl.FdfsStorageImpl;
 import io.vertx.fastdfs.options.FdfsStorageOptions;
 
@@ -20,8 +19,8 @@ import io.vertx.fastdfs.options.FdfsStorageOptions;
  */
 public interface FdfsStorage {
 
-	public static FdfsStorage create(Vertx vertx, FdfsStorageOptions options) {
-		return new FdfsStorageImpl(vertx, options);
+	public static FdfsStorage create(Vertx vertx, NetSocket socket, FdfsStorageOptions options) {
+		return new FdfsStorageImpl(vertx, socket, options);
 	}
 
 	FdfsStorage upload(ReadStream<Buffer> stream, long size, String ext, Handler<AsyncResult<FdfsFileId>> handler);
@@ -63,4 +62,6 @@ public interface FdfsStorage {
 	FdfsStorage delete(FdfsFileId fileId, Handler<AsyncResult<Void>> handler);
 
 	FdfsStorage fileInfo(FdfsFileId fileId, Handler<AsyncResult<FdfsFileInfo>> handler);
+	
+	void close();
 }

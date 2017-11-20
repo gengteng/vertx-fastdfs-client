@@ -21,6 +21,10 @@ public class FdfsTrackerOptions extends AbstractFdfsOptions {
 	public FdfsTrackerOptions() {
 		super();
 	}
+	
+	public FdfsTrackerOptions(AbstractFdfsOptions other) {
+		super(other);
+	}
 
 	public SocketAddress getAddress() {
 		return address;
@@ -48,5 +52,29 @@ public class FdfsTrackerOptions extends AbstractFdfsOptions {
 	@Override
 	public JsonObject toJson() {
 		return super.toJson().put(HOST, address.host()).put(PORT, address.port());
+	}
+	
+	@Override
+	public FdfsTrackerOptions setCharset(String charset) {
+		super.setCharset(charset);
+		return this;
+	}
+	
+	@Override
+	public FdfsTrackerOptions setConnectTimeout(long connectTimeout) {
+		super.setConnectTimeout(connectTimeout);
+		return this;
+	}
+	
+	@Override
+	public FdfsTrackerOptions setNetworkTimeout(long networkTimeout) {
+		super.setNetworkTimeout(networkTimeout);
+		return this;
+	}
+	
+	@Override
+	public FdfsTrackerOptions setDefaultExt(String defaultExt) {
+		super.setDefaultExt(defaultExt);
+		return this;
 	}
 }

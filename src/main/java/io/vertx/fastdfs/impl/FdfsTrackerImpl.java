@@ -13,9 +13,9 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsGroupInfo;
+import io.vertx.fastdfs.FdfsStorage;
 import io.vertx.fastdfs.FdfsStorageInfo;
-import io.vertx.fastdfs.api.FdfsStorage;
-import io.vertx.fastdfs.api.FdfsTracker;
+import io.vertx.fastdfs.FdfsTracker;
 import io.vertx.fastdfs.exp.FdfsException;
 import io.vertx.fastdfs.options.FdfsStorageOptions;
 import io.vertx.fastdfs.options.FdfsTrackerOptions;
@@ -26,8 +26,8 @@ import io.vertx.fastdfs.utils.FdfsUtils;
 /**
  * 
  * @author GengTeng
- * <p>
- * me@gteng.org
+ *         <p>
+ *         me@gteng.org
  * 
  * @version 3.5.0
  */
@@ -74,7 +74,8 @@ public class FdfsTrackerImpl implements FdfsTracker {
 				FdfsProtocol.TRACKER_QUERY_STORAGE_STORE_BODY_LEN, null).setHandler(ar -> {
 					if (ar.succeeded()) {
 						FdfsPacket resPacket = ar.result();
-						parseStorage(resPacket.getBodyBuffer(), options.getCharset(), true).setHandler(handler);
+						parseStorage(resPacket.getBodyBuffer(), options.getCharset(), true)
+								.compose(storageOptions -> getConnectedStorage(storageOptions)).setHandler(handler);
 					} else {
 						handler.handle(Future.failedFuture(ar.cause()));
 					}
@@ -351,10 +352,10 @@ public class FdfsTrackerImpl implements FdfsTracker {
 		return this;
 	}
 
-	private Future<FdfsStorage> parseStorage(Buffer bodyBuffer, String charset, boolean hasPathIndex) {
-		FdfsStorageOptions storageOptions = new FdfsStorageOptions().copyBasic(options);
-
+	private Future<FdfsStorageOptions> parseStorage(Buffer bodyBuffer, String charset, boolean hasPathIndex) {
 		try {
+			FdfsStorageOptions storageOptions = new FdfsStorageOptions(options);
+
 			String group = FdfsUtils
 					.fdfsTrim(bodyBuffer.getString(0, FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, options.getCharset()));
 			String ip = FdfsUtils.fdfsTrim(bodyBuffer.getString(FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN,
@@ -368,7 +369,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 				storageOptions.setStorePathIndex(storePathIndex);
 			}
 
-			return Future.succeededFuture(FdfsStorage.create(vertx, storageOptions));
+			return Future.succeededFuture(storageOptions);
 		} catch (Exception e) {
 			return Future.failedFuture(e);
 		}
@@ -387,6 +388,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 					if (ar.succeeded()) {
 						FdfsPacket resPacket = ar.result();
 						parseStorage(resPacket.getBodyBuffer(), options.getCharset(), true)
+								.compose(storageOptions -> getConnectedStorage(storageOptions))
 								.setHandler(futureFdfsStorage);
 					} else {
 						futureFdfsStorage.fail(ar.cause());
@@ -403,10 +405,24 @@ public class FdfsTrackerImpl implements FdfsTracker {
 
 		return futureFdfsStorage;
 	}
-	
+
+	private Future<FdfsStorage> getConnectedStorage(FdfsStorageOptions storageOptions) {
+		return Future.future(future -> {
+			FdfsProtocol.getConnection(vertx, storageOptions.getAddress(), storageOptions.getConnectTimeout(),
+					storageOptions.getNetworkTimeout()).setHandler(ar -> {
+						if (ar.succeeded()) {
+							future.complete(FdfsStorage.create(vertx, ar.result(), storageOptions));
+						} else {
+							future.fail(ar.cause());
+						}
+					});
+		});
+	}
+
 	@Override
 	public void close() {
 		if (socket != null) {
+			System.out.println("tracker: close socket");
 			FdfsProtocol.closeSocket(socket);
 		}
 	}

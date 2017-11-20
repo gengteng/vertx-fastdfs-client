@@ -1,4 +1,4 @@
-package io.vertx.fastdfs.api;
+package io.vertx.fastdfs;
 
 import java.util.List;
 
@@ -6,9 +6,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetSocket;
-import io.vertx.fastdfs.FdfsFileId;
-import io.vertx.fastdfs.FdfsGroupInfo;
-import io.vertx.fastdfs.FdfsStorageInfo;
 import io.vertx.fastdfs.impl.FdfsTrackerImpl;
 import io.vertx.fastdfs.options.FdfsTrackerOptions;
 

@@ -24,6 +24,10 @@ public class FdfsStorageOptions extends AbstractFdfsOptions {
 		super();
 	}
 	
+	public FdfsStorageOptions(AbstractFdfsOptions other) {
+		super(other);
+	}
+	
 	public byte getStorePathIndex() {
 		return storePathIndex;
 	}
@@ -68,5 +72,29 @@ public class FdfsStorageOptions extends AbstractFdfsOptions {
 	@Override
 	public JsonObject toJson() {
 		return super.toJson().put(HOST, address.host()).put(PORT, address.port());
+	}
+	
+	@Override
+	public FdfsStorageOptions setCharset(String charset) {
+		super.setCharset(charset);
+		return this;
+	}
+	
+	@Override
+	public FdfsStorageOptions setConnectTimeout(long connectTimeout) {
+		super.setConnectTimeout(connectTimeout);
+		return this;
+	}
+	
+	@Override
+	public FdfsStorageOptions setNetworkTimeout(long networkTimeout) {
+		super.setNetworkTimeout(networkTimeout);
+		return this;
+	}
+	
+	@Override
+	public FdfsStorageOptions setDefaultExt(String defaultExt) {
+		super.setDefaultExt(defaultExt);
+		return this;
 	}
 }

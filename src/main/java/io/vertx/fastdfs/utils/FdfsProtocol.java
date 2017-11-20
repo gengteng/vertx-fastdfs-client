@@ -3,9 +3,12 @@ package io.vertx.fastdfs.utils;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.exp.FdfsException;
@@ -14,8 +17,8 @@ import io.vertx.fastdfs.exp.FdfsException;
  * FastDFS protocol constants and functions.
  * 
  * @author GengTeng
- * <p>
- * me@gteng.org
+ *         <p>
+ *         me@gteng.org
  * 
  * @version 3.5.0
  */
@@ -119,7 +122,8 @@ public final class FdfsProtocol {
 	 * @return Buffer
 	 */
 	public static Buffer packHeader(byte command, byte status, long bodyLength) {
-		return FdfsUtils.newZero(10).setLong(0, bodyLength).setByte(PROTO_HEADER_CMD_INDEX, command).setByte(PROTO_HEADER_STATUS_INDEX, status);
+		return FdfsUtils.newZero(10).setLong(0, bodyLength).setByte(PROTO_HEADER_CMD_INDEX, command)
+				.setByte(PROTO_HEADER_STATUS_INDEX, status);
 	}
 
 	/**
@@ -179,7 +183,7 @@ public final class FdfsProtocol {
 			AtomicLong bodyReceived = new AtomicLong();
 
 			socket.handler(buffer -> {
-				
+
 				if (!futureBodyLength.isComplete()) {
 					final long currentLength = headerBuffer.length() + buffer.length();
 					final int lengthToFillHeader = HEADER_BYTE_LENGTH - headerBuffer.length();
@@ -190,13 +194,13 @@ public final class FdfsProtocol {
 
 						if (!futureBodyLength.succeeded()) {
 							future.fail(futureBodyLength.cause());
-							closeSocket(socket);
+							// closeSocket(socket);
 							return;
 						}
-						
+
 						if (futureBodyLength.result() == 0) {
 							future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result()));
-							closeSocket(socket);
+							// closeSocket(socket);
 							return;
 						}
 
@@ -214,7 +218,7 @@ public final class FdfsProtocol {
 								bodyReceived.addAndGet(bodytoWrite.length());
 								if (bodyReceived.get() >= futureBodyLength.result()) {
 									future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result()));
-									closeSocket(socket);
+									// closeSocket(socket);
 								}
 							}
 
@@ -231,7 +235,7 @@ public final class FdfsProtocol {
 							if (bodyBuffer.length() >= futureBodyLength.result()) {
 								future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
 										.setBodyBuffer(bodyBuffer.buffer()));
-								closeSocket(socket);
+								// closeSocket(socket);
 							}
 						}
 					} else { // if (currentLength < HEADER_BYTE_LENGTH)
@@ -251,7 +255,7 @@ public final class FdfsProtocol {
 						bodyReceived.addAndGet(buffer.length());
 						if (bodyReceived.get() >= futureBodyLength.result()) {
 							future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result()));
-							closeSocket(socket);
+							// closeSocket(socket);
 						}
 						return;
 					}
@@ -262,11 +266,11 @@ public final class FdfsProtocol {
 					if (bodyBuffer.length() >= futureBodyLength.result()) {
 						future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
 								.setBodyBuffer(bodyBuffer.buffer()));
-						closeSocket(socket);
+						// closeSocket(socket);
 					}
 				}
 			});
-			
+
 			socket.exceptionHandler(e -> {
 				if (!future.isComplete()) {
 					if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
@@ -318,8 +322,8 @@ public final class FdfsProtocol {
 
 		long bodyLength = headerBuffer.getLong(0);
 		if (expectedBodyLength > 0 && bodyLength != expectedBodyLength) {
-			return Future.failedFuture(new FdfsException("receive packet body length: " + bodyLength + " is not equal to the expected: "
-					+ expectedBodyLength));
+			return Future.failedFuture(new FdfsException("receive packet body length: " + bodyLength
+					+ " is not equal to the expected: " + expectedBodyLength));
 		}
 
 		return Future.succeededFuture(bodyLength);
@@ -410,5 +414,14 @@ public final class FdfsProtocol {
 		}
 
 		return json;
+	}
+
+	public static Future<NetSocket> getConnection(Vertx vertx, SocketAddress address, long connectTimeout,
+			long networkTimeout) {
+		return Future.future(future -> {
+			vertx.createNetClient(
+					new NetClientOptions().setConnectTimeout((int) connectTimeout).setIdleTimeout((int) (networkTimeout / 1000)))
+					.connect(address, future);
+		});
 	}
 }

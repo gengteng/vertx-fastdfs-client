@@ -72,4 +72,6 @@ public interface FdfsClient {
 	FdfsClient groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler);
 
 	FdfsClient storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler);
+	
+	FdfsClient getTracker(Handler<AsyncResult<FdfsTracker>> handler);
 }

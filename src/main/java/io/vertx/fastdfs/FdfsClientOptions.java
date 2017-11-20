@@ -42,6 +42,11 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 		trackers = new ArrayList<>();
 	}
 	
+	public FdfsClientOptions(AbstractFdfsOptions other) {
+		super(other);
+		trackers = new ArrayList<>();
+	}
+	
 	public static JsonObject defaultJsonConfig() {
 		return DEFAULT_CONFIG.copy();
 	}
@@ -101,5 +106,29 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 				new JsonArray(trackers.stream()
 						.map(sockAddr -> new JsonObject().put(HOST, sockAddr.host()).put(PORT, sockAddr.port()))
 						.collect(Collectors.toList())));
+	}
+	
+	@Override
+	public FdfsClientOptions setCharset(String charset) {
+		super.setCharset(charset);
+		return this;
+	}
+	
+	@Override
+	public FdfsClientOptions setConnectTimeout(long connectTimeout) {
+		super.setConnectTimeout(connectTimeout);
+		return this;
+	}
+	
+	@Override
+	public FdfsClientOptions setNetworkTimeout(long networkTimeout) {
+		super.setNetworkTimeout(networkTimeout);
+		return this;
+	}
+	
+	@Override
+	public FdfsClientOptions setDefaultExt(String defaultExt) {
+		super.setDefaultExt(defaultExt);
+		return this;
 	}
 }
