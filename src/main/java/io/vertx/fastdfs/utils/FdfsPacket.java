@@ -6,6 +6,9 @@ import io.vertx.core.buffer.Buffer;
  * FastDFS server packet.
  * 
  * @author GengTeng
+ * <p>
+ * me@gteng.org
+ * 
  * @version 3.5.0
  */
 public final class FdfsPacket {

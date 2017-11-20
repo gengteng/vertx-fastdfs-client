@@ -29,8 +29,8 @@ import io.vertx.fastdfs.utils.FdfsUtils;
 /**
  * 
  * @author GengTeng
- * <p>
- * me@gteng.org
+ *         <p>
+ *         me@gteng.org
  * 
  * @version 3.5.0
  */
@@ -58,6 +58,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	@Override
+	public FdfsStorage upload(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, buffer, ext).setHandler(handler);
+		return this;
+	}
+
+	@Override
 	public FdfsStorage uploadAppender(ReadStream<Buffer> stream, long size, String ext,
 			Handler<AsyncResult<FdfsFileId>> handler) {
 		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, stream, size, ext).setHandler(handler);
@@ -67,6 +73,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage uploadAppender(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
 		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, fileFullPathName, ext).setHandler(handler);
+		return this;
+	}
+
+	@Override
+	public FdfsStorage uploadAppender(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, buffer, ext).setHandler(handler);
 		return this;
 	}
 
@@ -95,9 +107,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength - size);
 
-			bodyBuffer.setLong(0, nameBuffer.length());
-			bodyBuffer.setLong(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, size);
-			bodyBuffer.setBuffer(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2, nameBuffer);
+			int offset = 0;
+			bodyBuffer.setLong(offset, nameBuffer.length());
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(offset, size);
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setBuffer(offset, nameBuffer);
 
 			socket.write(bodyBuffer);
 			if (socket.writeQueueFull()) {
@@ -143,6 +158,57 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	@Override
+	public FdfsStorage append(Buffer buffer, FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
+		getConnection().compose(socket -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+					null);
+
+			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
+			long bodyLength = 2 * FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + nameBuffer.length() + buffer.length();
+			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_APPEND_FILE, (byte) 0,
+					bodyLength);
+
+			socket.write(headerBuffer);
+			if (socket.writeQueueFull()) {
+				socket.pause();
+				socket.drainHandler(v -> {
+					socket.resume();
+				});
+			}
+
+			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
+
+			int offset = 0;
+			bodyBuffer.setLong(offset, nameBuffer.length());
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(offset, buffer.length());
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setBuffer(offset, nameBuffer);
+			offset += nameBuffer.length();
+			bodyBuffer.setBuffer(offset, buffer);
+
+			socket.write(bodyBuffer);
+			if (socket.writeQueueFull()) {
+				socket.pause();
+				socket.drainHandler(v -> {
+					socket.resume();
+				});
+			}
+
+			return futureResponse;
+		}).setHandler(ar -> {
+
+			if (ar.succeeded()) {
+				handler.handle(Future.succeededFuture());
+			} else {
+				handler.handle(Future.failedFuture(ar.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
 	public FdfsStorage modify(ReadStream<Buffer> stream, long size, FdfsFileId fileId, long offset,
 			Handler<AsyncResult<Void>> handler) {
 
@@ -167,10 +233,14 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength - size);
 
-			bodyBuffer.setLong(0, nameBuffer.length());
-			bodyBuffer.setLong(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, offset);
-			bodyBuffer.setLong(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2, size);
-			bodyBuffer.setBuffer(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 3, nameBuffer);
+			int bufferOffset = 0;
+			bodyBuffer.setLong(bufferOffset, nameBuffer.length());
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(bufferOffset, offset);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(bufferOffset, size);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
 
 			socket.write(bodyBuffer);
 			if (socket.writeQueueFull()) {
@@ -217,6 +287,59 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	@Override
+	public FdfsStorage modify(Buffer buffer, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler) {
+		getConnection().compose(socket -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+					null);
+
+			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
+			long bodyLength = 3 * FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + nameBuffer.length() + buffer.length();
+			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_MODIFY_FILE, (byte) 0,
+					bodyLength);
+
+			socket.write(headerBuffer);
+			if (socket.writeQueueFull()) {
+				socket.pause();
+				socket.drainHandler(v -> {
+					socket.resume();
+				});
+			}
+
+			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
+
+			int bufferOffset = 0;
+			bodyBuffer.setLong(bufferOffset, nameBuffer.length());
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(bufferOffset, offset);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(bufferOffset, buffer.length());
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
+			bufferOffset += nameBuffer.length();
+			bodyBuffer.setBuffer(bufferOffset, buffer);
+
+			socket.write(bodyBuffer);
+			if (socket.writeQueueFull()) {
+				socket.pause();
+				socket.drainHandler(v -> {
+					socket.resume();
+				});
+			}
+
+			return futureResponse;
+		}).setHandler(ar -> {
+
+			if (ar.succeeded()) {
+				handler.handle(Future.succeededFuture());
+			} else {
+				handler.handle(Future.failedFuture(ar.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
 	public FdfsStorage download(FdfsFileId fileId, WriteStream<Buffer> stream, long offset, long bytes,
 			Handler<AsyncResult<Void>> handler) {
 
@@ -241,11 +364,14 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
 
-			bodyBuffer.setLong(0, offset);
-			bodyBuffer.setLong(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, bytes);
-			bodyBuffer.setBuffer(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2, groupBuffer);
-			bodyBuffer.setBuffer(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2 + FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN,
-					nameBuffer);
+			int bufferOffset = 0;
+			bodyBuffer.setLong(bufferOffset, offset);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(bufferOffset, bytes);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setBuffer(bufferOffset, groupBuffer);
+			bufferOffset += FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN;
+			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
 
 			socket.write(bodyBuffer);
 			if (socket.writeQueueFull()) {
@@ -289,6 +415,59 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	@Override
+	public FdfsStorage download(FdfsFileId fileId, long offset, long bytes, Handler<AsyncResult<Buffer>> handler) {
+		getConnection().compose(socket -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+					null);
+
+			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
+			Buffer groupBuffer = Buffer.buffer(fileId.group(), options.getCharset());
+			long bodyLength = FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2 + FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN
+					+ nameBuffer.length();
+			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_DOWNLOAD_FILE, (byte) 0,
+					bodyLength);
+
+			socket.write(headerBuffer);
+			if (socket.writeQueueFull()) {
+				socket.pause();
+				socket.drainHandler(v -> {
+					socket.resume();
+				});
+			}
+
+			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
+
+			int bufferOffset = 0;
+			bodyBuffer.setLong(bufferOffset, offset);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(bufferOffset, bytes);
+			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setBuffer(bufferOffset, groupBuffer);
+			bufferOffset += FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN;
+			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
+
+			socket.write(bodyBuffer);
+			if (socket.writeQueueFull()) {
+				socket.pause();
+				socket.drainHandler(v -> {
+					socket.resume();
+				});
+			}
+
+			return futureResponse;
+		}).setHandler(ar -> {
+
+			if (ar.succeeded()) {
+				handler.handle(Future.succeededFuture(ar.result().getBodyBuffer()));
+			} else {
+				handler.handle(Future.failedFuture(ar.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
 	public FdfsStorage setMetaData(FdfsFileId fileId, JsonObject metaData, byte flag,
 			Handler<AsyncResult<Void>> handler) {
 
@@ -314,13 +493,18 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer groupBuffer = Buffer.buffer(fileId.group(), options.getCharset());
 			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
 
-			bodyBuffer.setLong(0, nameBuffer.length());
-			bodyBuffer.setLong(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, metaBuffer.length());
-			bodyBuffer.setByte(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2, flag);
-			bodyBuffer.setBuffer(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2 + 1, groupBuffer);
-			bodyBuffer.setBuffer(FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE * 2 + 1 + FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN,
-					nameBuffer);
-			bodyBuffer.setBuffer((int) bodyLength - metaBuffer.length(), metaBuffer);
+			int offset = 0;
+			bodyBuffer.setLong(offset, nameBuffer.length());
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setLong(offset, metaBuffer.length());
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setByte(offset, flag);
+			offset += 1;
+			bodyBuffer.setBuffer(offset, groupBuffer);
+			offset += FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN;
+			bodyBuffer.setBuffer(offset, nameBuffer);
+			offset += nameBuffer.length();
+			bodyBuffer.setBuffer(offset, metaBuffer);
 
 			socket.write(bodyBuffer);
 			if (socket.writeQueueFull()) {
@@ -542,6 +726,62 @@ public class FdfsStorageImpl implements FdfsStorage {
 				String group = FdfsUtils.fdfsTrim(body.getString(0, FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, charset));
 				String id = FdfsUtils
 						.fdfsTrim(body.getString(FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, body.length(), charset));
+
+				futureFileId.complete(FdfsFileId.create(group, id));
+			} else {
+				futureFileId.fail(ar.cause());
+			}
+
+		});
+
+		return futureFileId;
+	}
+
+	private Future<FdfsFileId> uploadFile(byte command, Buffer buffer, String ext) {
+
+		Future<FdfsFileId> futureFileId = Future.future();
+
+		getConnection().compose(socket -> {
+			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+					null);
+
+			long bodyLength = 1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN
+					+ buffer.length();
+			Buffer header = FdfsProtocol.packHeader(command, (byte) 0, bodyLength);
+
+			socket.write(header);
+
+			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
+
+			int offset = 0;
+			bodyBuffer.setByte(offset, options.getStorePathIndex());
+			offset += 1;
+			bodyBuffer.setLong(offset, buffer.length());
+			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
+			bodyBuffer.setString(offset, ext, options.getCharset());
+			offset += FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN;
+			bodyBuffer.setBuffer(offset, buffer);
+
+			socket.write(bodyBuffer);
+
+			return futurePacket;
+		}).setHandler(ar -> {
+
+			if (ar.succeeded()) {
+				FdfsPacket packet = ar.result();
+				Buffer resBodyBuffer = packet.getBodyBuffer();
+
+				if (resBodyBuffer.length() <= FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN) {
+					futureFileId.fail("response body length: " + resBodyBuffer.length() + " <= "
+							+ FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN);
+					return;
+				}
+
+				String charset = options.getCharset();
+				String group = FdfsUtils
+						.fdfsTrim(resBodyBuffer.getString(0, FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, charset));
+				String id = FdfsUtils.fdfsTrim(
+						resBodyBuffer.getString(FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, resBodyBuffer.length(), charset));
 
 				futureFileId.complete(FdfsFileId.create(group, id));
 			} else {

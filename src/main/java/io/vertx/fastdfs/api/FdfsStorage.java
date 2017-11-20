@@ -28,21 +28,31 @@ public interface FdfsStorage {
 
 	FdfsStorage upload(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler);
 	
+	FdfsStorage upload(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler);
+	
 	FdfsStorage uploadAppender(ReadStream<Buffer> stream, long size, String ext, Handler<AsyncResult<FdfsFileId>> handler);
 
 	FdfsStorage uploadAppender(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler);
+	
+	FdfsStorage uploadAppender(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler);
 	
 	FdfsStorage append(ReadStream<Buffer> stream, long size, FdfsFileId fileId, Handler<AsyncResult<Void>> handler);
 
 	FdfsStorage append(String fileFullPathName, FdfsFileId fileId, Handler<AsyncResult<Void>> handler);
 	
+	FdfsStorage append(Buffer buffer, FdfsFileId fileId, Handler<AsyncResult<Void>> handler);
+	
 	FdfsStorage modify(ReadStream<Buffer> stream, long size, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler);
 
 	FdfsStorage modify(String fileFullPathName, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler);
+	
+	FdfsStorage modify(Buffer buffer, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler);
 
 	FdfsStorage download(FdfsFileId fileId, WriteStream<Buffer> stream, long offset, long bytes, Handler<AsyncResult<Void>> handler);
 
 	FdfsStorage download(FdfsFileId fileId, String fileFullPathName, long offset, long bytes, Handler<AsyncResult<Void>> handler);
+	
+	FdfsStorage download(FdfsFileId fileId, long offset, long bytes, Handler<AsyncResult<Buffer>> handler);
 
 	FdfsStorage setMetaData(FdfsFileId fileId, JsonObject metaData, byte flag, Handler<AsyncResult<Void>> handler);
 

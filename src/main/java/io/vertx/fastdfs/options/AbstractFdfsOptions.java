@@ -84,7 +84,7 @@ public abstract class AbstractFdfsOptions {
 	}
 
 	public AbstractFdfsOptions fromJson(JsonObject json) {
-
+		
 		this.charset = json.getString(CHARSET, DEFAULT_CHARSET);
 		this.connectTimeout = json.getLong(CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
 		this.networkTimeout = json.getLong(NETWORK_TIMEOUT, DEFAULT_NETWORK_TIMEOUT);
@@ -96,5 +96,10 @@ public abstract class AbstractFdfsOptions {
 	public JsonObject toJson() {
 		return new JsonObject().put(CHARSET, charset).put(CONNECT_TIMEOUT, connectTimeout)
 				.put(NETWORK_TIMEOUT, networkTimeout).put(DEFAULT_EXT, defaultExt);
+	}
+	
+	@Override
+	public String toString() {
+		return toJson().encodePrettily();
 	}
 }

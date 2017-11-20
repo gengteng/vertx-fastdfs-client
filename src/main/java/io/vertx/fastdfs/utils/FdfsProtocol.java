@@ -14,6 +14,9 @@ import io.vertx.fastdfs.exp.FdfsException;
  * FastDFS protocol constants and functions.
  * 
  * @author GengTeng
+ * <p>
+ * me@gteng.org
+ * 
  * @version 3.5.0
  */
 public final class FdfsProtocol {

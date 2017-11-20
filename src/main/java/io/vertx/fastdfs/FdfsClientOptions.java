@@ -13,17 +13,25 @@ import io.vertx.fastdfs.options.AbstractFdfsOptions;
 /**
  * 
  * @author GengTeng
- * <p>
- * me@gteng.org
+ *         <p>
+ *         me@gteng.org
  * 
  * @version 3.5.0
  */
 public class FdfsClientOptions extends AbstractFdfsOptions {
+	
+	private static final JsonObject DEFAULT_CONFIG = new JsonObject()
+			.put(FdfsClientOptions.CHARSET, FdfsClientOptions.DEFAULT_CHARSET)
+			.put(FdfsClientOptions.CONNECT_TIMEOUT, FdfsClientOptions.DEFAULT_CONNECT_TIMEOUT)
+			.put(FdfsClientOptions.NETWORK_TIMEOUT, FdfsClientOptions.DEFAULT_NETWORK_TIMEOUT)
+			.put(FdfsClientOptions.DEFAULT_EXT, FdfsClientOptions.DEFAULT_DEFAULT_EXT).put(FdfsClientOptions.TRACKERS,
+					new JsonArray().add(new JsonObject().put(FdfsClientOptions.HOST, FdfsClientOptions.DEFAULT_HOST)
+							.put(FdfsClientOptions.PORT, FdfsClientOptions.DEFAULT_PORT)));
 
 	public static final String TRACKERS = "trackers";
 	public static final String HOST = "host";
 	public static final String PORT = "port";
-	
+
 	public static final String DEFAULT_HOST = "127.0.0.1";
 	public static final int DEFAULT_PORT = 22122;
 
@@ -33,7 +41,11 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 		super();
 		trackers = new ArrayList<>();
 	}
-
+	
+	public static JsonObject defaultJsonConfig() {
+		return DEFAULT_CONFIG.copy();
+	}
+	
 	public List<SocketAddress> getTrackers() {
 		return trackers;
 	}
@@ -47,7 +59,7 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 		this.trackers.add(trackers);
 		return this;
 	}
-	
+
 	public FdfsClientOptions addTracker(String host, int port) {
 		this.trackers.add(SocketAddress.inetSocketAddress(port, host));
 		return this;
@@ -79,7 +91,7 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 				}
 			});
 		}
-
+		
 		return this;
 	}
 

@@ -35,4 +35,6 @@ public interface FdfsTracker {
 	FdfsTracker groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler);
 
 	FdfsTracker storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler);
+	
+	void close();
 }

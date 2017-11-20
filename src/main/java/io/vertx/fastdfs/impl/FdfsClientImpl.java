@@ -23,8 +23,8 @@ import io.vertx.fastdfs.options.FdfsTrackerOptions;
 /**
  * 
  * @author GengTeng
- * <p>
- * me@gteng.org
+ *         <p>
+ *         me@gteng.org
  * 
  * @version 3.5.0
  */
@@ -43,10 +43,7 @@ public class FdfsClientImpl implements FdfsClient {
 	}
 
 	public FdfsClientImpl(Vertx vertx, JsonObject options) {
-		this.vertx = vertx;
-		this.options = new FdfsClientOptions().fromJson(options);
-		this.currentTrackerIndex = 0;
-		this.trackerCount = this.options.getTrackers().size();
+		this(vertx, new FdfsClientOptions().fromJson(options));
 	}
 
 	public FdfsClientOptions options() {
@@ -59,6 +56,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().upload(stream, size, ext, handler);
 					} else {
@@ -78,8 +78,33 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().upload(fileFullPathName, ext, handler);
+					} else {
+						handler.handle(Future.failedFuture(storage.cause()));
+					}
+				});
+			} else {
+				handler.handle(Future.failedFuture(tracker.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
+	public FdfsClient upload(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		getTracker().setHandler(tracker -> {
+			if (tracker.succeeded()) {
+				tracker.result().getStoreStorage(storage -> {
+					
+					tracker.result().close();
+					
+					if (storage.succeeded()) {
+						storage.result().upload(buffer, ext, handler);
 					} else {
 						handler.handle(Future.failedFuture(storage.cause()));
 					}
@@ -98,6 +123,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().uploadAppender(stream, size, ext, handler);
 					} else {
@@ -117,8 +145,33 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().uploadAppender(fileFullPathName, ext, handler);
+					} else {
+						handler.handle(Future.failedFuture(storage.cause()));
+					}
+				});
+			} else {
+				handler.handle(Future.failedFuture(tracker.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
+	public FdfsClient uploadAppender(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		getTracker().setHandler(tracker -> {
+			if (tracker.succeeded()) {
+				tracker.result().getStoreStorage(storage -> {
+					
+					tracker.result().close();
+					
+					if (storage.succeeded()) {
+						storage.result().uploadAppender(buffer, ext, handler);
 					} else {
 						handler.handle(Future.failedFuture(storage.cause()));
 					}
@@ -137,6 +190,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().append(stream, size, fileId, handler);
 					} else {
@@ -156,8 +212,33 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().append(fileFullPathName, fileId, handler);
+					} else {
+						handler.handle(Future.failedFuture(storage.cause()));
+					}
+				});
+			} else {
+				handler.handle(Future.failedFuture(tracker.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
+	public FdfsClient append(Buffer buffer, FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
+		getTracker().setHandler(tracker -> {
+			if (tracker.succeeded()) {
+				tracker.result().getStoreStorage(fileId.group(), storage -> {
+					
+					tracker.result().close();
+					
+					if (storage.succeeded()) {
+						storage.result().append(buffer, fileId, handler);
 					} else {
 						handler.handle(Future.failedFuture(storage.cause()));
 					}
@@ -176,6 +257,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().modify(stream, size, fileId, offset, handler);
 					} else {
@@ -196,8 +280,33 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().modify(fileFullPathName, fileId, offset, handler);
+					} else {
+						handler.handle(Future.failedFuture(storage.cause()));
+					}
+				});
+			} else {
+				handler.handle(Future.failedFuture(tracker.cause()));
+			}
+		});
+
+		return this;
+	}
+
+	@Override
+	public FdfsClient modify(Buffer buffer, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler) {
+		getTracker().setHandler(tracker -> {
+			if (tracker.succeeded()) {
+				tracker.result().getStoreStorage(fileId.group(), storage -> {
+					
+					tracker.result().close();
+					
+					if (storage.succeeded()) {
+						storage.result().modify(buffer, fileId, offset, handler);
 					} else {
 						handler.handle(Future.failedFuture(storage.cause()));
 					}
@@ -216,6 +325,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getFetchStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().download(fileId, stream, offset, bytes, handler);
 					} else {
@@ -226,6 +338,7 @@ public class FdfsClientImpl implements FdfsClient {
 				handler.handle(Future.failedFuture(tracker.cause()));
 			}
 		});
+		
 		return this;
 	}
 
@@ -235,6 +348,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getFetchStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().download(fileId, fileFullPathName, offset, bytes, handler);
 					} else {
@@ -245,6 +361,29 @@ public class FdfsClientImpl implements FdfsClient {
 				handler.handle(Future.failedFuture(tracker.cause()));
 			}
 		});
+		
+		return this;
+	}
+	
+	@Override
+	public FdfsClient download(FdfsFileId fileId, long offset, long bytes, Handler<AsyncResult<Buffer>> handler) {
+		getTracker().setHandler(tracker -> {
+			if (tracker.succeeded()) {
+				tracker.result().getFetchStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
+					if (storage.succeeded()) {
+						storage.result().download(fileId, offset, bytes, handler);
+					} else {
+						handler.handle(Future.failedFuture(storage.cause()));
+					}
+				});
+			} else {
+				handler.handle(Future.failedFuture(tracker.cause()));
+			}
+		});
+		
 		return this;
 	}
 
@@ -254,6 +393,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().setMetaData(fileId, metaData, flag, handler);
 					} else {
@@ -272,6 +414,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().getMetaData(fileId, handler);
 					} else {
@@ -290,6 +435,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().delete(fileId, handler);
 					} else {
@@ -308,6 +456,9 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
+					
+					tracker.result().close();
+					
 					if (storage.succeeded()) {
 						storage.result().fileInfo(fileId, handler);
 					} else {
@@ -325,7 +476,11 @@ public class FdfsClientImpl implements FdfsClient {
 	public FdfsClient groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler) {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
-				tracker.result().groups(handler);
+				tracker.result().groups(groups -> {
+					tracker.result().close();
+					
+					handler.handle(groups);
+				});
 			} else {
 				handler.handle(Future.failedFuture(tracker.cause()));
 			}
@@ -337,7 +492,11 @@ public class FdfsClientImpl implements FdfsClient {
 	public FdfsClient storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler) {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
-				tracker.result().storages(group, handler);
+				tracker.result().storages(group, storages -> {
+					tracker.result().close();
+					
+					handler.handle(storages);
+				});
 			} else {
 				handler.handle(Future.failedFuture(tracker.cause()));
 			}

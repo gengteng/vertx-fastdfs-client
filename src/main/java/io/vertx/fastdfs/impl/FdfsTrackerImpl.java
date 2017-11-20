@@ -403,4 +403,11 @@ public class FdfsTrackerImpl implements FdfsTracker {
 
 		return futureFdfsStorage;
 	}
+	
+	@Override
+	public void close() {
+		if (socket != null) {
+			FdfsProtocol.closeSocket(socket);
+		}
+	}
 }

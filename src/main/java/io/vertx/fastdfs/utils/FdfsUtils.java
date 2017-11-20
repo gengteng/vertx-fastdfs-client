@@ -4,6 +4,14 @@ import java.util.Arrays;
 
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * 
+ * @author GengTeng
+ * <p>
+ * me@gteng.org
+ * 
+ * @version 3.5.0
+ */
 public final class FdfsUtils {
 
 	public static Buffer newZero(long size) {
