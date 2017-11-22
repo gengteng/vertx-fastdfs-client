@@ -15,10 +15,10 @@ import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsGroupInfo;
 import io.vertx.fastdfs.FdfsStorage;
 import io.vertx.fastdfs.FdfsStorageInfo;
+import io.vertx.fastdfs.FdfsStorageOptions;
 import io.vertx.fastdfs.FdfsTracker;
+import io.vertx.fastdfs.FdfsTrackerOptions;
 import io.vertx.fastdfs.exp.FdfsException;
-import io.vertx.fastdfs.options.FdfsStorageOptions;
-import io.vertx.fastdfs.options.FdfsTrackerOptions;
 import io.vertx.fastdfs.utils.FdfsPacket;
 import io.vertx.fastdfs.utils.FdfsProtocol;
 import io.vertx.fastdfs.utils.FdfsUtils;
@@ -422,8 +422,12 @@ public class FdfsTrackerImpl implements FdfsTracker {
 	@Override
 	public void close() {
 		if (socket != null) {
-			System.out.println("tracker: close socket");
 			FdfsProtocol.closeSocket(socket);
 		}
+	}
+
+	@Override
+	public FdfsTrackerOptions getOptions() {
+		return options;
 	}
 }

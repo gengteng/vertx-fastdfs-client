@@ -19,8 +19,8 @@ import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsFileInfo;
 import io.vertx.fastdfs.FdfsStorage;
+import io.vertx.fastdfs.FdfsStorageOptions;
 import io.vertx.fastdfs.exp.FdfsException;
-import io.vertx.fastdfs.options.FdfsStorageOptions;
 import io.vertx.fastdfs.utils.FdfsPacket;
 import io.vertx.fastdfs.utils.FdfsProtocol;
 import io.vertx.fastdfs.utils.FdfsUtils;
@@ -655,6 +655,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, String fileFullPathName, String ext) {
+		
+		Buffer extBuffer = Buffer.buffer(ext, options.getCharset());
+		if (extBuffer.length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			return Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")");
+		}
 
 		Future<FdfsFileId> futureFileId = Future.future();
 
@@ -682,7 +687,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, ReadStream<Buffer> stream, long size, String ext) {
-
+		
+		Buffer extBuffer = Buffer.buffer(ext, options.getCharset());
+		if (extBuffer.length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			return Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")");
+		}
+		
 		stream.pause();
 
 		Future<FdfsFileId> futureFileId = Future.future();
@@ -700,7 +710,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			body.setByte(0, options.getStorePathIndex());
 			body.setLong(1, size);
-			body.setString(1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, ext, options.getCharset());
+			body.setBuffer(1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, extBuffer);
 
 			socket.write(body);
 
@@ -736,6 +746,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, Buffer buffer, String ext) {
+		
+		Buffer extBuffer = Buffer.buffer(ext, options.getCharset());
+		if (extBuffer.length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			return Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")");
+		}
 
 		Future<FdfsFileId> futureFileId = Future.future();
 
@@ -756,7 +771,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			offset += 1;
 			bodyBuffer.setLong(offset, buffer.length());
 			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
-			bodyBuffer.setString(offset, ext, options.getCharset());
+			bodyBuffer.setBuffer(offset, extBuffer);
 			offset += FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN;
 			bodyBuffer.setBuffer(offset, buffer);
 
@@ -844,8 +859,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public void close() {
 		if (socket != null) {
-			System.out.println("storage: close socket");
 			FdfsProtocol.closeSocket(socket);
 		}
+	}
+
+	@Override
+	public FdfsStorageOptions getOptions() {
+		return options;
 	}
 }

@@ -1,7 +1,7 @@
 package io.vertx.fastdfs.utils;
 
-import java.util.Arrays;
-
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -15,10 +15,10 @@ import io.vertx.core.buffer.Buffer;
 public final class FdfsUtils {
 
 	public static Buffer newZero(long size) {
-		byte[] bytes = new byte[(int) size];
-		Arrays.fill(bytes, (byte) 0);
-
-		return Buffer.buffer(bytes);
+		int _size = (int) size;
+		ByteBuf byteBuf = Unpooled.buffer(_size, Integer.MAX_VALUE);
+		byteBuf.setIndex(0, _size);
+		return Buffer.buffer(byteBuf);
 	}
 
 	public static void printBytes(String flag, byte[] bytes) {

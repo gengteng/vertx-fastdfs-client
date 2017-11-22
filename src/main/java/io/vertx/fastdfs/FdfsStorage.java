@@ -9,7 +9,6 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.impl.FdfsStorageImpl;
-import io.vertx.fastdfs.options.FdfsStorageOptions;
 
 /**
  * FastDFS storage.
@@ -62,6 +61,8 @@ public interface FdfsStorage {
 	FdfsStorage delete(FdfsFileId fileId, Handler<AsyncResult<Void>> handler);
 
 	FdfsStorage fileInfo(FdfsFileId fileId, Handler<AsyncResult<FdfsFileInfo>> handler);
+	
+	FdfsStorageOptions getOptions();
 	
 	void close();
 }

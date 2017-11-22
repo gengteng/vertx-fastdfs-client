@@ -17,7 +17,7 @@ import io.vertx.fastdfs.FdfsFileInfo;
 import io.vertx.fastdfs.FdfsGroupInfo;
 import io.vertx.fastdfs.FdfsStorageInfo;
 import io.vertx.fastdfs.FdfsTracker;
-import io.vertx.fastdfs.options.FdfsTrackerOptions;
+import io.vertx.fastdfs.FdfsTrackerOptions;
 import io.vertx.fastdfs.utils.FdfsProtocol;
 
 /**
@@ -53,6 +53,12 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient upload(ReadStream<Buffer> stream, long size, String ext,
 			Handler<AsyncResult<FdfsFileId>> handler) {
+		
+		if (Buffer.buffer(ext, options.getCharset()).length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			handler.handle(Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")"));
+			return this;
+		}
+		
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
@@ -78,6 +84,12 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient upload(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		
+		if (Buffer.buffer(ext, options.getCharset()).length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			handler.handle(Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")"));
+			return this;
+		}
+		
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
@@ -103,6 +115,12 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient upload(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		
+		if (Buffer.buffer(ext, options.getCharset()).length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			handler.handle(Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")"));
+			return this;
+		}
+		
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
@@ -130,6 +148,12 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient uploadAppender(ReadStream<Buffer> stream, long size, String ext,
 			Handler<AsyncResult<FdfsFileId>> handler) {
+		
+		if (Buffer.buffer(ext, options.getCharset()).length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			handler.handle(Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")"));
+			return this;
+		}
+		
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
@@ -156,6 +180,12 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient uploadAppender(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		
+		if (Buffer.buffer(ext, options.getCharset()).length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			handler.handle(Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")"));
+			return this;
+		}
+		
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
@@ -182,6 +212,12 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient uploadAppender(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
+		
+		if (Buffer.buffer(ext, options.getCharset()).length() > FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN) {
+			handler.handle(Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")"));
+			return this;
+		}
+		
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
@@ -627,5 +663,10 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(handler);
 		
 		return this;
+	}
+
+	@Override
+	public FdfsClientOptions getOptions() {
+		return options;
 	}
 }

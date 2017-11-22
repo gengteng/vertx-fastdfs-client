@@ -7,7 +7,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetSocket;
 import io.vertx.fastdfs.impl.FdfsTrackerImpl;
-import io.vertx.fastdfs.options.FdfsTrackerOptions;
 
 /**
  * FastDFS File ID.
@@ -32,6 +31,8 @@ public interface FdfsTracker {
 	FdfsTracker groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler);
 
 	FdfsTracker storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler);
+	
+	FdfsTrackerOptions getOptions();
 	
 	void close();
 }
