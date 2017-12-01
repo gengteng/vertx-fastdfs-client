@@ -76,4 +76,6 @@ public interface FdfsClient {
 	FdfsClient getTracker(Handler<AsyncResult<FdfsTracker>> handler);
 	
 	FdfsClientOptions getOptions();
+	
+	void close();
 }

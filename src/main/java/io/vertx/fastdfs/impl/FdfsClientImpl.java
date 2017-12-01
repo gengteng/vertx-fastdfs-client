@@ -680,4 +680,11 @@ public class FdfsClientImpl implements FdfsClient {
 	public FdfsClientOptions getOptions() {
 		return options;
 	}
+
+	@Override
+	public void close() {
+		if (client != null) {
+			client.close();
+		}
+	}
 }
