@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
@@ -416,12 +417,9 @@ public final class FdfsProtocol {
 		return json;
 	}
 
-	public static Future<NetSocket> getConnection(Vertx vertx, SocketAddress address, long connectTimeout,
-			long networkTimeout) {
+	public static Future<NetSocket> getConnection(NetClient client, SocketAddress address) {
 		return Future.future(future -> {
-			vertx.createNetClient(
-					new NetClientOptions().setConnectTimeout((int) connectTimeout).setIdleTimeout((int) (networkTimeout / 1000)))
-					.connect(address, future);
+			client.connect(address, future);
 		});
 	}
 }

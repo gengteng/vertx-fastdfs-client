@@ -9,6 +9,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.fastdfs.FdfsFileId;
@@ -34,11 +36,14 @@ import io.vertx.fastdfs.utils.FdfsUtils;
 public class FdfsTrackerImpl implements FdfsTracker {
 
 	private Vertx vertx;
+	private NetClient client;
 	private NetSocket socket;
 	private FdfsTrackerOptions options;
 
 	public FdfsTrackerImpl(Vertx vertx, NetSocket socket, FdfsTrackerOptions options) {
 		this.vertx = vertx;
+		this.client = vertx.createNetClient(new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout())
+				.setIdleTimeout((int) options.getNetworkTimeout() / 1000));
 		this.socket = socket;
 		this.options = options;
 	}
@@ -408,19 +413,21 @@ public class FdfsTrackerImpl implements FdfsTracker {
 
 	private Future<FdfsStorage> getConnectedStorage(FdfsStorageOptions storageOptions) {
 		return Future.future(future -> {
-			FdfsProtocol.getConnection(vertx, storageOptions.getAddress(), storageOptions.getConnectTimeout(),
-					storageOptions.getNetworkTimeout()).setHandler(ar -> {
-						if (ar.succeeded()) {
-							future.complete(FdfsStorage.create(vertx, ar.result(), storageOptions));
-						} else {
-							future.fail(ar.cause());
-						}
-					});
+			FdfsProtocol.getConnection(client, storageOptions.getAddress()).setHandler(ar -> {
+				if (ar.succeeded()) {
+					future.complete(FdfsStorage.create(vertx, ar.result(), storageOptions));
+				} else {
+					future.fail(ar.cause());
+				}
+			});
 		});
 	}
 
 	@Override
 	public void close() {
+		if (client != null) {
+			client.close();
+		}
 		if (socket != null) {
 			FdfsProtocol.closeSocket(socket);
 		}
