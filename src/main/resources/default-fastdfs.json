@@ -3,6 +3,7 @@
   "connectTimeout" : 10000,
   "networkTimeout" : 10000,
   "defaultExt" : "",
+  "poolSize" : 15,
   "trackers" : [
     {
       "host" : "127.0.0.1",

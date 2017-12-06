@@ -12,7 +12,6 @@ import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetSocket;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
@@ -36,12 +35,12 @@ import io.vertx.fastdfs.utils.FdfsUtils;
 public class FdfsStorageImpl implements FdfsStorage {
 
 	private Vertx vertx;
-	private NetSocket socket;
+	private FdfsConnectionPool pool;
 	private FdfsStorageOptions options;
 
-	public FdfsStorageImpl(Vertx vertx, NetSocket socket, FdfsStorageOptions options) {
+	public FdfsStorageImpl(Vertx vertx, FdfsConnectionPool pool, FdfsStorageOptions options) {
 		this.vertx = vertx;
-		this.socket = socket;
+		this.pool = pool;
 		this.options = options;
 	}
 
@@ -88,8 +87,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Handler<AsyncResult<Void>> handler) {
 
 		stream.pause();
+		
+		Future<FdfsConnection> futureConn = getConnection();
 
-		getConnection().compose(socket -> {
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -128,7 +129,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
-
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
+			
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
 			} else {
@@ -160,7 +164,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 	@Override
 	public FdfsStorage append(Buffer buffer, FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
-		getConnection().compose(socket -> {
+		
+		Future<FdfsConnection> futureConn = getConnection();
+		
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -198,6 +205,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
@@ -214,8 +225,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Handler<AsyncResult<Void>> handler) {
 
 		stream.pause();
+		
+		Future<FdfsConnection> futureConn = getConnection();
 
-		getConnection().compose(socket -> {
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -256,6 +269,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
@@ -289,7 +306,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 	@Override
 	public FdfsStorage modify(Buffer buffer, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler) {
-		getConnection().compose(socket -> {
+		
+		Future<FdfsConnection> futureConn = getConnection();
+		
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -329,6 +349,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
@@ -343,8 +367,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage download(FdfsFileId fileId, WriteStream<Buffer> stream, long offset, long bytes,
 			Handler<AsyncResult<Void>> handler) {
+		
+		Future<FdfsConnection> futureConn = getConnection();
 
-		getConnection().compose(socket -> {
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					stream);
 
@@ -384,6 +410,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
@@ -417,7 +447,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 	@Override
 	public FdfsStorage download(FdfsFileId fileId, long offset, long bytes, Handler<AsyncResult<Buffer>> handler) {
-		getConnection().compose(socket -> {
+		
+		Future<FdfsConnection> futureConn = getConnection();
+		
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -457,6 +490,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture(ar.result().getBodyBuffer()));
@@ -471,8 +508,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage setMetaData(FdfsFileId fileId, JsonObject metaData, byte flag,
 			Handler<AsyncResult<Void>> handler) {
+		
+		Future<FdfsConnection> futureConn = getConnection();
 
-		getConnection().compose(socket -> {
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -517,6 +556,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
+			
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
 			} else {
@@ -535,7 +579,9 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage getMetaData(FdfsFileId fileId, Handler<AsyncResult<JsonObject>> handler) {
 
-		getConnection().compose(socket -> {
+		Future<FdfsConnection> futureConn = getConnection();
+		
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -552,6 +598,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
+			
 			if (ar.succeeded()) {
 				FdfsPacket packet = ar.result();
 				Buffer bodyBuffer = packet.getBodyBuffer();
@@ -569,7 +620,9 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage delete(FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
 
-		getConnection().compose(socket -> {
+		Future<FdfsConnection> futureConn = getConnection();
+		
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -586,6 +639,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
+			
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture());
 			} else {
@@ -598,7 +656,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 	@Override
 	public FdfsStorage fileInfo(FdfsFileId fileId, Handler<AsyncResult<FdfsFileInfo>> handler) {
-		getConnection().compose(socket -> {
+		
+		Future<FdfsConnection> futureConn = getConnection();
+		
+		futureConn.compose(socket -> {
 
 			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
@@ -616,6 +677,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futureResponse;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
+			
 			if (ar.succeeded()) {
 				FdfsPacket packet = ar.result();
 				Buffer bodyBuffer = packet.getBodyBuffer();
@@ -650,8 +716,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		return this;
 	}
 
-	private Future<NetSocket> getConnection() {
-		return Future.succeededFuture(socket);
+	private Future<FdfsConnection> getConnection() {
+		return pool.get(options.getAddress());
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, String fileFullPathName, String ext) {
@@ -696,8 +762,9 @@ public class FdfsStorageImpl implements FdfsStorage {
 		stream.pause();
 
 		Future<FdfsFileId> futureFileId = Future.future();
+		Future<FdfsConnection> futureConn = getConnection();
 
-		getConnection().compose(socket -> {
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -719,6 +786,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futurePacket;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				FdfsPacket packet = ar.result();
@@ -753,8 +824,9 @@ public class FdfsStorageImpl implements FdfsStorage {
 		}
 
 		Future<FdfsFileId> futureFileId = Future.future();
+		Future<FdfsConnection> futureConn = getConnection();
 
-		getConnection().compose(socket -> {
+		futureConn.compose(socket -> {
 			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
@@ -779,6 +851,10 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 			return futurePacket;
 		}).setHandler(ar -> {
+			
+			if (futureConn.succeeded()) {
+				futureConn.result().release();
+			}
 
 			if (ar.succeeded()) {
 				FdfsPacket packet = ar.result();
@@ -853,13 +929,6 @@ public class FdfsStorageImpl implements FdfsStorage {
 		}
 
 		private LocalFile() {
-		}
-	}
-
-	@Override
-	public void close() {
-		if (socket != null) {
-			FdfsProtocol.closeSocket(socket);
 		}
 	}
 

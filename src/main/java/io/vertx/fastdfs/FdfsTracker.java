@@ -5,7 +5,7 @@ import java.util.List;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.net.NetSocket;
+import io.vertx.fastdfs.impl.FdfsConnectionPool;
 import io.vertx.fastdfs.impl.FdfsTrackerImpl;
 
 /**
@@ -16,8 +16,8 @@ import io.vertx.fastdfs.impl.FdfsTrackerImpl;
  */
 public interface FdfsTracker {
 
-	public static FdfsTracker create(Vertx vertx, NetSocket socket, FdfsTrackerOptions options) {
-		return new FdfsTrackerImpl(vertx, socket, options);
+	public static FdfsTracker create(Vertx vertx, FdfsConnectionPool pool, FdfsTrackerOptions options) {
+		return new FdfsTrackerImpl(vertx, pool, options);
 	}
 
 	FdfsTracker getStoreStorage(Handler<AsyncResult<FdfsStorage>> handler);
@@ -33,6 +33,4 @@ public interface FdfsTracker {
 	FdfsTracker storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler);
 	
 	FdfsTrackerOptions getOptions();
-	
-	void close();
 }

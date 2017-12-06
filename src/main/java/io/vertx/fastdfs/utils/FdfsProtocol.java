@@ -11,6 +11,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.exp.FdfsException;
+import io.vertx.fastdfs.impl.FdfsConnection;
 
 /**
  * FastDFS protocol constants and functions.
@@ -161,7 +162,7 @@ public final class FdfsProtocol {
 	/**
 	 * 从socket接收并解析报文。
 	 * 
-	 * @param socket
+	 * @param connection
 	 *            等待接收报文的socket
 	 * @param expectedCommand
 	 *            期望的command
@@ -171,7 +172,7 @@ public final class FdfsProtocol {
 	 *            报文体将被写入的流，如果该参数不为null，则报文体内容将被写入该流，不作为返回值返回。
 	 * @return 异步FdfsPacket对象，如果bodyWriteStream为null，则报文体也保存到该对象中；否则该对象仅包含报文长度。
 	 */
-	public static Future<FdfsPacket> recvPacket(NetSocket socket, byte expectedCommand, long expectedBodyLength,
+	public static Future<FdfsPacket> recvPacket(FdfsConnection connection, byte expectedCommand, long expectedBodyLength,
 			WriteStream<Buffer> bodyWriteStream) {
 
 		return Future.future(future -> {
@@ -181,7 +182,7 @@ public final class FdfsProtocol {
 			WrappedBuffer bodyBuffer = new WrappedBuffer();
 			AtomicLong bodyReceived = new AtomicLong();
 
-			socket.handler(buffer -> {
+			connection.handler(buffer -> {
 
 				if (!futureBodyLength.isComplete()) {
 					final long currentLength = headerBuffer.length() + buffer.length();
@@ -208,9 +209,9 @@ public final class FdfsProtocol {
 								Buffer bodytoWrite = buffer.getBuffer(lengthToFillHeader, buffer.length());
 								bodyWriteStream.write(bodytoWrite);
 								if (bodyWriteStream.writeQueueFull()) {
-									socket.pause();
-									socket.drainHandler(v -> {
-										socket.resume();
+									connection.pause();
+									connection.drainHandler(v -> {
+										connection.resume();
 									});
 								}
 
@@ -245,9 +246,9 @@ public final class FdfsProtocol {
 					if (bodyWriteStream != null) {
 						bodyWriteStream.write(buffer);
 						if (bodyWriteStream.writeQueueFull()) {
-							socket.pause();
-							socket.drainHandler(v -> {
-								socket.resume();
+							connection.pause();
+							connection.drainHandler(v -> {
+								connection.resume();
 							});
 						}
 
@@ -270,7 +271,7 @@ public final class FdfsProtocol {
 				}
 			});
 
-			socket.exceptionHandler(e -> {
+			connection.exceptionHandler(e -> {
 				if (!future.isComplete()) {
 					if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
 						future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
@@ -281,7 +282,7 @@ public final class FdfsProtocol {
 				}
 			});
 
-			socket.closeHandler(v -> {
+			connection.endHandler(v -> {
 				if (!future.isComplete()) {
 					if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
 						future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())

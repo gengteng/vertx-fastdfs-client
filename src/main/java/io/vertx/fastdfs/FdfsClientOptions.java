@@ -24,6 +24,7 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 			.put(FdfsClientOptions.CHARSET, FdfsClientOptions.DEFAULT_CHARSET)
 			.put(FdfsClientOptions.CONNECT_TIMEOUT, FdfsClientOptions.DEFAULT_CONNECT_TIMEOUT)
 			.put(FdfsClientOptions.NETWORK_TIMEOUT, FdfsClientOptions.DEFAULT_NETWORK_TIMEOUT)
+			.put(FdfsClientOptions.POOLSIZE, FdfsClientOptions.DEFAULT_POOLSIZE)
 			.put(FdfsClientOptions.DEFAULT_EXT, FdfsClientOptions.DEFAULT_DEFAULT_EXT).put(FdfsClientOptions.TRACKERS,
 					new JsonArray().add(new JsonObject().put(FdfsClientOptions.HOST, FdfsClientOptions.DEFAULT_HOST)
 							.put(FdfsClientOptions.PORT, FdfsClientOptions.DEFAULT_PORT)));
@@ -129,6 +130,12 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 	@Override
 	public FdfsClientOptions setDefaultExt(String defaultExt) {
 		super.setDefaultExt(defaultExt);
+		return this;
+	}
+	
+	@Override
+	public FdfsClientOptions setPoolSize(int poolSize) {
+		super.setPoolSize(poolSize);
 		return this;
 	}
 }

@@ -5,9 +5,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetSocket;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
+import io.vertx.fastdfs.impl.FdfsConnectionPool;
 import io.vertx.fastdfs.impl.FdfsStorageImpl;
 
 /**
@@ -18,8 +18,8 @@ import io.vertx.fastdfs.impl.FdfsStorageImpl;
  */
 public interface FdfsStorage {
 
-	public static FdfsStorage create(Vertx vertx, NetSocket socket, FdfsStorageOptions options) {
-		return new FdfsStorageImpl(vertx, socket, options);
+	public static FdfsStorage create(Vertx vertx, FdfsConnectionPool pool, FdfsStorageOptions options) {
+		return new FdfsStorageImpl(vertx, pool, options);
 	}
 
 	FdfsStorage upload(ReadStream<Buffer> stream, long size, String ext, Handler<AsyncResult<FdfsFileId>> handler);
@@ -63,6 +63,4 @@ public interface FdfsStorage {
 	FdfsStorage fileInfo(FdfsFileId fileId, Handler<AsyncResult<FdfsFileInfo>> handler);
 	
 	FdfsStorageOptions getOptions();
-	
-	void close();
 }
