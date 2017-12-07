@@ -2,6 +2,7 @@ package io.vertx.fastdfs.impl;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -14,7 +15,7 @@ public class FdfsConnectionPool {
 	private final NetClient client;
 	private final int poolSize;
 
-	private ConcurrentMap<SocketAddress, FdfsPool> pools;
+	private ConcurrentMap<SocketAddress, CircularConnectionPool> pools;
 	
 	public FdfsConnectionPool(Vertx vertx, NetClientOptions options, int poolSize) {
 		this.client = vertx.createNetClient(options);
@@ -27,7 +28,7 @@ public class FdfsConnectionPool {
 		if (pools.containsKey(address)) {
 			return pools.get(address).next().get();
 		} else {
-			FdfsPool pool = new FdfsPool(client, address, poolSize);
+			CircularConnectionPool pool = new CircularConnectionPool(client, address, poolSize);
 			
 			pools.put(address, pool);
 			
@@ -40,13 +41,13 @@ public class FdfsConnectionPool {
 		pools.clear();
 	}
 
-	public static class FdfsPool {
+	public static class CircularConnectionPool {
 		private FdfsConnection[] connections;
-		private volatile int current;
+		private AtomicInteger current;
 		private final int capacity;
 		
-		public FdfsPool(NetClient client, SocketAddress address, int capacity) {
-			this.current = 0;
+		public CircularConnectionPool(NetClient client, SocketAddress address, int capacity) {
+			this.current = new AtomicInteger(0);
 			
 			this.connections = new FdfsConnection[capacity];
 			
@@ -57,14 +58,12 @@ public class FdfsConnectionPool {
 			this.capacity = connections.length;
 		}
 		
-		public int getAndIncrease() {
-			int cur = current;
-			current = (current + 1) % capacity;
-			return cur;
+		private int getAndIncrement() {
+			return current.getAndUpdate(cur -> (cur + 1) % capacity);
 		}
 		
 		public FdfsConnection next() {
-			return this.connections[getAndIncrease()];
+			return this.connections[getAndIncrement()];
 		}
 	}
 }

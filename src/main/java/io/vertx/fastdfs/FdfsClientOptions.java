@@ -11,7 +11,16 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.fastdfs.options.AbstractFdfsOptions;
 
 /**
- * 
+ * This object controls the connection setting to the FastDFS Server. There is no need to specify most of the settings
+ * since it has built the following sensible defaults:
+ * <p>
+ * * `charset`: `UTF-8`
+ * * `connectTimeout`: 10000
+ * * `networkTimeout`: 10000
+ * * `poolSize`: 15
+ * * `trackers` : [
+ * * ]
+ * <p>
  * @author GengTeng
  *         <p>
  *         me@gteng.org
