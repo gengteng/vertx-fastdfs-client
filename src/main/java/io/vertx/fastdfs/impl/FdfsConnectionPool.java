@@ -10,6 +10,15 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 
+/**
+ * FastDFS Connection Pool.
+ * 
+ * @author GengTeng
+ * <p>
+ * me@gteng.org
+ * 
+ * @version 3.5.0
+ */
 public class FdfsConnectionPool {
 	
 	private final NetClient client;

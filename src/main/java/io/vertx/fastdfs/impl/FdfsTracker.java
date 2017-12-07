@@ -4,34 +4,73 @@ import java.util.List;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsGroupInfo;
 import io.vertx.fastdfs.FdfsStorageInfo;
 
 /**
- * FastDFS File ID.
+ * FastDFS tracker.
  * 
  * @author GengTeng
  * @version 3.5.0
  */
 public interface FdfsTracker {
 
-	public static FdfsTracker create(Vertx vertx, FdfsConnectionPool pool, FdfsTrackerOptions options) {
-		return new FdfsTrackerImpl(vertx, pool, options);
-	}
-
+	/**
+	   * get a store storage.
+	   *
+	   * @param handler the handler that will receive the {@code FdfsStorage} result
+	   * @return the tracker
+	   */
 	FdfsTracker getStoreStorage(Handler<AsyncResult<FdfsStorage>> handler);
 
+	/**
+	   * get a store storage of a group.
+	   *
+	   * @param the group
+	   * @param handler the handler that will receive the {@code FdfsStorage} result
+	   * @return the tracker
+	   */
 	FdfsTracker getStoreStorage(String group, Handler<AsyncResult<FdfsStorage>> handler);
 
+	/**
+	   * get a fetch storage of a server file.
+	   *
+	   * @param fileId the file id
+	   * @param handler the handler that will receive the {@code FdfsStorage} result
+	   * @return the tracker
+	   */
 	FdfsTracker getFetchStorage(FdfsFileId fileId, Handler<AsyncResult<FdfsStorage>> handler);
 
+	/**
+	   * get a update storage of a server file.
+	   *
+	   * @param fileId the file id
+	   * @param handler the handler that will receive the {@code FdfsStorage} result
+	   * @return the tracker
+	   */
 	FdfsTracker getUpdateStorage(FdfsFileId fileId, Handler<AsyncResult<FdfsStorage>> handler);
 
+	/**
+	   * get groups.
+	   *
+	   * @param handler the handler that will receive the {@code List<FdfsGroupInfo>} result
+	   * @return the tracker
+	   */
 	FdfsTracker groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler);
 
+	/**
+	   * get storages of a group.
+	   *
+	   * @param handler the handler that will receive the {@code List<FdfsStorageInfo>} result
+	   * @return the tracker
+	   */
 	FdfsTracker storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler);
 	
+	/**
+	   * get the options of this tracker.
+	   *
+	   * @return the options
+	   */
 	FdfsTrackerOptions getOptions();
 }

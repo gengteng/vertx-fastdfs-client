@@ -459,7 +459,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 	}
 
 	private Future<FdfsStorage> createStorage(FdfsStorageOptions storageOptions) {
-		return Future.succeededFuture(FdfsStorage.create(vertx, pool, storageOptions));
+		return Future.succeededFuture(new FdfsStorageImpl(vertx, pool, storageOptions));
 	}
 
 	@Override

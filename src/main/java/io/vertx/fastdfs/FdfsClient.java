@@ -78,7 +78,7 @@ public interface FdfsClient {
 	FdfsClient upload(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler);
 	
 	/**
-	   * uploadAppender a {@code ReadStream<Buffer>} object.
+	   * upload a {@code ReadStream<Buffer>} object as appender.
 	   *
 	   * @param stream the {@code ReadStream<Buffer>} object
 	   * @param size the size
@@ -89,7 +89,7 @@ public interface FdfsClient {
 	FdfsClient uploadAppender(ReadStream<Buffer> stream, long size, String ext, Handler<AsyncResult<FdfsFileId>> handler);
 
 	/**
-	   * uploadAppender a local file.
+	   * upload a local file as appender.
 	   *
 	   * @param fileFullPathName full path to the file
 	   * @param ext the extension
@@ -99,7 +99,7 @@ public interface FdfsClient {
 	FdfsClient uploadAppender(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler);
 	
 	/**
-	   * uploadAppender a {@code Buffer} object.
+	   * upload a {@code Buffer} object as appender.
 	   *
 	   * @param buffer the {@code Buffer} object
 	   * @param ext the extension

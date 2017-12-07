@@ -557,7 +557,7 @@ public class FdfsClientImpl implements FdfsClient {
 	}
 
 	private Future<FdfsTracker> createTracker(FdfsTrackerOptions trackerOptions) {
-		return Future.succeededFuture(FdfsTracker.create(vertx, pool, trackerOptions));
+		return Future.succeededFuture(new FdfsTrackerImpl(vertx, pool, trackerOptions));
 	}
 
 	@Override
