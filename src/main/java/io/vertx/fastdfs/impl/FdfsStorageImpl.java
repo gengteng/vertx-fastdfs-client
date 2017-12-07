@@ -18,6 +18,7 @@ import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsFileInfo;
 import io.vertx.fastdfs.exp.FdfsException;
+import io.vertx.fastdfs.options.FdfsStorageOptions;
 import io.vertx.fastdfs.utils.FdfsPacket;
 import io.vertx.fastdfs.utils.FdfsProtocol;
 import io.vertx.fastdfs.utils.FdfsUtils;

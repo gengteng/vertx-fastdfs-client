@@ -8,6 +8,7 @@ import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsFileId;
 import io.vertx.fastdfs.FdfsFileInfo;
+import io.vertx.fastdfs.options.FdfsStorageOptions;
 
 /**
  * FastDFS storage.

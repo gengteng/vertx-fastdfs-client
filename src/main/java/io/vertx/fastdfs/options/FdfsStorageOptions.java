@@ -1,8 +1,7 @@
-package io.vertx.fastdfs.impl;
+package io.vertx.fastdfs.options;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.fastdfs.options.AbstractFdfsOptions;
 
 /**
  * 
