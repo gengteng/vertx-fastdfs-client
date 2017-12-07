@@ -3,6 +3,7 @@ package io.vertx.fastdfs.utils;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
@@ -172,7 +173,7 @@ public final class FdfsProtocol {
 	 *            报文体将被写入的流，如果该参数不为null，则报文体内容将被写入该流，不作为返回值返回。
 	 * @return 异步FdfsPacket对象，如果bodyWriteStream为null，则报文体也保存到该对象中；否则该对象仅包含报文长度。
 	 */
-	public static Future<FdfsPacket> recvPacket(FdfsConnection connection, byte expectedCommand, long expectedBodyLength,
+	public static Future<FdfsPacket> recvPacket(Vertx vertx, long timeoutMillis, FdfsConnection connection, byte expectedCommand, long expectedBodyLength,
 			WriteStream<Buffer> bodyWriteStream) {
 
 		return Future.future(future -> {
@@ -181,8 +182,31 @@ public final class FdfsProtocol {
 			Future<Long> futureBodyLength = Future.future();
 			WrappedBuffer bodyBuffer = new WrappedBuffer();
 			AtomicLong bodyReceived = new AtomicLong();
+			AtomicLong lastReceiveTime = new AtomicLong(System.currentTimeMillis());
+			
+			vertx.setPeriodic(timeoutMillis, l -> {
+				if (System.currentTimeMillis() - lastReceiveTime.get() > timeoutMillis) {
+					
+					vertx.cancelTimer(l);
+					
+					if (!future.isComplete()) {
+						if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
+							future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
+									.setBodyBuffer(bodyBuffer.buffer()));
+						} else {
+							future.fail(new FdfsException("receive timeout"));
+						}
+					}
+				} else {
+					if (future.isComplete()) {
+						vertx.cancelTimer(l);
+					}
+				}
+			});
 
 			connection.handler(buffer -> {
+				
+				lastReceiveTime.set(System.currentTimeMillis());
 
 				if (!futureBodyLength.isComplete()) {
 					final long currentLength = headerBuffer.length() + buffer.length();

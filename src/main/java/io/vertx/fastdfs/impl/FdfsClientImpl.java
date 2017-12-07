@@ -39,8 +39,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	public FdfsClientImpl(Vertx vertx, FdfsClientOptions options) {
 		this.vertx = vertx;
-		this.pool = new FdfsConnectionPool(vertx, new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout())
-				.setIdleTimeout((int) (options.getNetworkTimeout() / 1000)), options.getPoolSize());
+		this.pool = new FdfsConnectionPool(vertx, new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout()), options.getPoolSize());
 		this.options = options;
 		this.currentTrackerIndex = 0;
 		this.trackerCount = options.getTrackers().size();

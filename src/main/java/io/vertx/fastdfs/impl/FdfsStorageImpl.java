@@ -90,8 +90,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
@@ -99,11 +99,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_APPEND_FILE, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -116,15 +116,15 @@ public class FdfsStorageImpl implements FdfsStorage {
 			offset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
 			bodyBuffer.setBuffer(offset, nameBuffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
-			Pump.pump(stream, socket).start();
+			Pump.pump(stream, connection).start();
 			stream.resume();
 
 			return futureResponse;
@@ -167,8 +167,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 		
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
@@ -176,11 +176,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_APPEND_FILE, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -195,11 +195,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			offset += nameBuffer.length();
 			bodyBuffer.setBuffer(offset, buffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -228,8 +228,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
@@ -237,11 +237,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_MODIFY_FILE, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -256,15 +256,15 @@ public class FdfsStorageImpl implements FdfsStorage {
 			bufferOffset += FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE;
 			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
-			Pump.pump(stream, socket).start();
+			Pump.pump(stream, connection).start();
 			stream.resume();
 
 			return futureResponse;
@@ -309,8 +309,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 		
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
@@ -318,11 +318,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_MODIFY_FILE, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -339,11 +339,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			bufferOffset += nameBuffer.length();
 			bodyBuffer.setBuffer(bufferOffset, buffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -370,8 +370,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					stream);
 
 			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
@@ -381,11 +381,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_DOWNLOAD_FILE, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -400,11 +400,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			bufferOffset += FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN;
 			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -450,8 +450,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 		
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer nameBuffer = Buffer.buffer(fileId.name(), options.getCharset());
@@ -461,11 +461,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_DOWNLOAD_FILE, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -480,11 +480,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			bufferOffset += FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN;
 			bodyBuffer.setBuffer(bufferOffset, nameBuffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -511,8 +511,8 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer metaBuffer = FdfsProtocol.packMetaData(metaData, options.getCharset());
@@ -522,11 +522,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			Buffer headerBuffer = FdfsProtocol.packHeader(FdfsProtocol.STORAGE_PROTO_CMD_SET_METADATA, (byte) 0,
 					bodyLength);
 
-			socket.write(headerBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(headerBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -546,11 +546,11 @@ public class FdfsStorageImpl implements FdfsStorage {
 			offset += nameBuffer.length();
 			bodyBuffer.setBuffer(offset, metaBuffer);
 
-			socket.write(bodyBuffer);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(bodyBuffer);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -581,18 +581,18 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 		Future<FdfsConnection> futureConn = getConnection();
 		
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer packet = FdfsProtocol.packFileId(FdfsProtocol.STORAGE_PROTO_CMD_GET_METADATA, fileId,
 					options.getCharset());
 
-			socket.write(packet);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(packet);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -622,18 +622,18 @@ public class FdfsStorageImpl implements FdfsStorage {
 
 		Future<FdfsConnection> futureConn = getConnection();
 		
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer packet = FdfsProtocol.packFileId(FdfsProtocol.STORAGE_PROTO_CMD_DELETE_FILE, fileId,
 					options.getCharset());
 
-			socket.write(packet);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(packet);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -659,19 +659,19 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		Future<FdfsConnection> futureConn = getConnection();
 		
-		futureConn.compose(socket -> {
+		futureConn.compose(connection -> {
 
-			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+			Future<FdfsPacket> futureResponse = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			Buffer packet = FdfsProtocol.packFileId(FdfsProtocol.STORAGE_PROTO_CMD_QUERY_FILE_INFO, fileId,
 					options.getCharset());
 
-			socket.write(packet);
-			if (socket.writeQueueFull()) {
-				socket.pause();
-				socket.drainHandler(v -> {
-					socket.resume();
+			connection.write(packet);
+			if (connection.writeQueueFull()) {
+				connection.pause();
+				connection.drainHandler(v -> {
+					connection.resume();
 				});
 			}
 
@@ -764,14 +764,14 @@ public class FdfsStorageImpl implements FdfsStorage {
 		Future<FdfsFileId> futureFileId = Future.future();
 		Future<FdfsConnection> futureConn = getConnection();
 
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			long bodyLength = 1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + size;
 			Buffer header = FdfsProtocol.packHeader(command, (byte) 0, bodyLength);
 
-			socket.write(header);
+			connection.write(header);
 
 			Buffer body = FdfsUtils.newZero(bodyLength - size);
 
@@ -779,9 +779,9 @@ public class FdfsStorageImpl implements FdfsStorage {
 			body.setLong(1, size);
 			body.setBuffer(1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE, extBuffer);
 
-			socket.write(body);
+			connection.write(body);
 
-			Pump.pump(stream, socket).start();
+			Pump.pump(stream, connection).start();
 			stream.resume();
 
 			return futurePacket;
@@ -826,15 +826,15 @@ public class FdfsStorageImpl implements FdfsStorage {
 		Future<FdfsFileId> futureFileId = Future.future();
 		Future<FdfsConnection> futureConn = getConnection();
 
-		futureConn.compose(socket -> {
-			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(socket, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
+		futureConn.compose(connection -> {
+			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
 					null);
 
 			long bodyLength = 1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN
 					+ buffer.length();
 			Buffer header = FdfsProtocol.packHeader(command, (byte) 0, bodyLength);
 
-			socket.write(header);
+			connection.write(header);
 
 			Buffer bodyBuffer = FdfsUtils.newZero(bodyLength);
 
@@ -847,7 +847,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			offset += FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN;
 			bodyBuffer.setBuffer(offset, buffer);
 
-			socket.write(bodyBuffer);
+			connection.write(bodyBuffer);
 
 			return futurePacket;
 		}).setHandler(ar -> {

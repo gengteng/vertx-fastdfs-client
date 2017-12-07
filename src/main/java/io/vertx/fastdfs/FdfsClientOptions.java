@@ -47,39 +47,81 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 
 	private List<SocketAddress> trackers;
 
+	/**
+	   * Default constructor
+	   */
 	public FdfsClientOptions() {
 		super();
 		trackers = new ArrayList<>();
 	}
 	
+	/**
+	   * Copy constructor
+	   * @param other  the options to copy
+	   */
 	public FdfsClientOptions(AbstractFdfsOptions other) {
 		super(other);
 		trackers = new ArrayList<>();
 	}
 	
+	/**
+	 * get the default {@code JsonObject} config
+	 * 
+	 * @return the {@code JsonObject}
+	 */
 	public static JsonObject defaultJsonConfig() {
 		return DEFAULT_CONFIG.copy();
 	}
 	
+	/**
+	 * get trackers
+	 * 
+	 * @return the trackers
+	 */
 	public List<SocketAddress> getTrackers() {
 		return trackers;
 	}
 
+	/**
+	 * add trackers
+	 * 
+	 * @param trackers the trackers
+	 * @return a reference to this, so the API can be used fluently
+	 */
 	public FdfsClientOptions addTrackers(SocketAddress... trackers) {
 		this.trackers.addAll(Arrays.asList(trackers));
 		return this;
 	}
 
+	/**
+	 * add a tracker
+	 * 
+	 * @param trackers the tracker
+	 * @return a reference to this, so the API can be used fluently
+	 */
 	public FdfsClientOptions addTracker(SocketAddress trackers) {
 		this.trackers.add(trackers);
 		return this;
 	}
 
+	/**
+	 * add a tracker
+	 * 
+	 * @param host the host
+	 * @param port the port
+	 * @return a reference to this, so the API can be used fluently
+	 */
 	public FdfsClientOptions addTracker(String host, int port) {
 		this.trackers.add(SocketAddress.inetSocketAddress(port, host));
 		return this;
 	}
 
+	/**
+	 * delete a tracker
+	 * 
+	 * @param index the index
+	 * @return a reference to this, so the API can be used fluently
+	 */
 	public FdfsClientOptions delTracker(int index) {
 		this.trackers.remove(index);
 		return this;
