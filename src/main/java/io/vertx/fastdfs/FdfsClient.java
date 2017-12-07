@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.impl.FdfsClientImpl;
+import io.vertx.fastdfs.impl.FdfsTracker;
 import io.vertx.fastdfs.FdfsGroupInfo;
 
 /**
