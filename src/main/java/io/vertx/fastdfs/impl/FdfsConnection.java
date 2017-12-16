@@ -44,6 +44,8 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 
 	/**
 	 * Create a RedisConnection.
+	 * @param client a NetClient instance
+	 * @param address the address to connect
 	 */
 	public FdfsConnection(NetClient client, SocketAddress address) {
 		this.client = client;

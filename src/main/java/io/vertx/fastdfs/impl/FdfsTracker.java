@@ -28,7 +28,7 @@ public interface FdfsTracker {
 	/**
 	   * get a store storage of a group.
 	   *
-	   * @param the group
+	   * @param group the group
 	   * @param handler the handler that will receive the {@code FdfsStorage} result
 	   * @return the tracker
 	   */
@@ -63,6 +63,7 @@ public interface FdfsTracker {
 	/**
 	   * get storages of a group.
 	   *
+	   * @param group the group
 	   * @param handler the handler that will receive the {@code List<FdfsStorageInfo>} result
 	   * @return the tracker
 	   */

@@ -143,7 +143,9 @@ public interface FdfsClient {
 	   * modify a server file with a {@code ReadStream<Buffer>}.
 	   *
 	   * @param stream the {@code ReadStream<Buffer>} object
+	   * @param size the size
 	   * @param fileId file ID
+	   * @param offset the offset
 	   * @param handler the handler that will receive the result
 	   * @return the client
 	   */
@@ -154,6 +156,7 @@ public interface FdfsClient {
 	   *
 	   * @param fileFullPathName full path to the file
 	   * @param fileId file ID
+	   * @param offset the offset
 	   * @param handler the handler that will receive the result
 	   * @return the client
 	   */
@@ -164,6 +167,7 @@ public interface FdfsClient {
 	   *
 	   * @param buffer the {@code Buffer} object
 	   * @param fileId file ID
+	   * @param offset the offset
 	   * @param handler the handler that will receive the result
 	   * @return the client
 	   */
@@ -185,7 +189,7 @@ public interface FdfsClient {
 	   * download a server file to a local file.
 	   *
 	   * @param fileId file ID
-	   * @param stream full path to the local file
+	   * @param fileFullPathName full path to the local file
 	   * @param offset the offset
 	   * @param bytes number of bytes
 	   * @param handler the handler that will receive the result
@@ -253,7 +257,7 @@ public interface FdfsClient {
 	/**
 	   * get storages of a group.
 	   *
-	   * @param the group
+	   * @param group the group
 	   * @param handler the handler that will receive the {@code List<FdfsStorageInfo>} result
 	   * @return the client
 	   */

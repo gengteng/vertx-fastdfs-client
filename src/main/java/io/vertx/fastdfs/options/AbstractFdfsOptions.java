@@ -44,6 +44,8 @@ public abstract class AbstractFdfsOptions {
 
 	/**
 	   * Copy constructor
+	   * 
+	   * @param other the other {@code AbstractFdfsOptions}
 	   */
 	public AbstractFdfsOptions(AbstractFdfsOptions other) {
 		charset = other.charset;
@@ -155,6 +157,8 @@ public abstract class AbstractFdfsOptions {
 
 	/**
 	   * get value from a {@code JsonObject}
+	   * 
+	   * @param json the {@code JsonObject}
 	   *
 	   * @return the {@code JsonObject}
 	   */

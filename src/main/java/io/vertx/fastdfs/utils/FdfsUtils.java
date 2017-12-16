@@ -36,8 +36,8 @@ public final class FdfsUtils {
 	/**
 	 * 在trim的基础上再去掉\u0000
 	 * 
-	 * @param src
-	 * @return
+	 * @param src the source string
+	 * @return new string
 	 */
 	public static String fdfsTrim(String src) {
 		return src.trim().replaceAll("^\u0000+|\u0000+$", "");

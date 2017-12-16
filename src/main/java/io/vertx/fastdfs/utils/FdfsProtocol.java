@@ -117,9 +117,9 @@ public final class FdfsProtocol {
 	/**
 	 * 封装协议头。
 	 * 
-	 * @param command
-	 * @param status
-	 * @param bodyLength
+	 * @param command command
+	 * @param status status
+	 * @param bodyLength bodyLength
 	 * @return Buffer
 	 */
 	public static Buffer packHeader(byte command, byte status, long bodyLength) {
@@ -163,6 +163,8 @@ public final class FdfsProtocol {
 	/**
 	 * 从socket接收并解析报文。
 	 * 
+	 * @param vertx {@code Vertx} 实例
+	 * @param timeoutMillis 超时时间
 	 * @param connection
 	 *            等待接收报文的socket
 	 * @param expectedCommand
@@ -322,10 +324,10 @@ public final class FdfsProtocol {
 	/**
 	 * 解析报文头。
 	 * 
-	 * @param headerBuffer
-	 * @param expectedCommand
-	 * @param expectedBodyLength
-	 * @return
+	 * @param headerBuffer header Buffer
+	 * @param expectedCommand expectedCommand
+	 * @param expectedBodyLength expectedBodyLength
+	 * @return async result of the length of the packet body
 	 */
 	public static Future<Long> parseHeader(Buffer headerBuffer, byte expectedCommand, long expectedBodyLength) {
 		if (headerBuffer.length() != HEADER_BYTE_LENGTH) {
@@ -356,7 +358,7 @@ public final class FdfsProtocol {
 	/**
 	 * 发送关闭指令并关掉socket。
 	 * 
-	 * @param socket
+	 * @param socket the socket to close
 	 */
 	public static void closeSocket(NetSocket socket) {
 		socket.end(packHeader(FDFS_PROTO_CMD_QUIT, (byte) 0, 0));
@@ -365,11 +367,10 @@ public final class FdfsProtocol {
 	/**
 	 * 封装只有fileId的包，下载和删除时使用。
 	 * 
-	 * @param command
-	 * @param group
-	 * @param fileId
-	 * @param charset
-	 * @return
+	 * @param command command
+	 * @param fileId fileId
+	 * @param charset charset
+	 * @return the packet buffer
 	 */
 	public static Buffer packFileId(byte command, FdfsFileId fileId, String charset) {
 		Buffer groupBuffer = Buffer.buffer(fileId.group(), charset);
@@ -387,8 +388,8 @@ public final class FdfsProtocol {
 	/**
 	 * 封装metadata为Buffer。
 	 * 
-	 * @param meta
-	 * @param charset
+	 * @param meta meta
+	 * @param charset charset
 	 * @return Buffer
 	 */
 	public static Buffer packMetaData(JsonObject meta, String charset) {
@@ -411,8 +412,8 @@ public final class FdfsProtocol {
 	/**
 	 * 解析Buffer为metadata(JsonObject)。
 	 * 
-	 * @param buffer
-	 * @param charset
+	 * @param buffer buffer
+	 * @param charset charset
 	 * @return JsonObject
 	 */
 	public static JsonObject parseMetaData(Buffer buffer, String charset) {
