@@ -9,6 +9,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.shareddata.Shareable;
 
 /**
  * FastDFS Connection Pool.
@@ -19,14 +20,17 @@ import io.vertx.core.net.SocketAddress;
  * 
  * @version 3.5.0
  */
-public class FdfsConnectionPool {
+public class FdfsConnectionPool implements Shareable {
 	
+	private final Vertx vertx;
 	private final NetClient client;
 	private final int poolSize;
+	private int refCount = 1;
 
 	private ConcurrentMap<SocketAddress, CircularConnectionPool> pools;
 	
 	public FdfsConnectionPool(Vertx vertx, NetClientOptions options, int poolSize) {
+		this.vertx = vertx;
 		this.client = vertx.createNetClient(options);
 		this.poolSize = poolSize;
 		
@@ -44,10 +48,20 @@ public class FdfsConnectionPool {
 			return pool.next().get();
 		}
 	}
+	
+	public void incRefCount() {
+		++refCount;
+	}
 
 	public void close() {
-		client.close();
-		pools.clear();
+		synchronized (vertx) {
+			--refCount;
+			
+			if (refCount == 0) {
+				client.close();
+				pools.clear();
+			}
+		}
 	}
 
 	public static class CircularConnectionPool {

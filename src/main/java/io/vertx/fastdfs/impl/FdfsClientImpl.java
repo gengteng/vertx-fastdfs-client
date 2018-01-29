@@ -9,6 +9,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.FdfsClient;
@@ -29,6 +30,8 @@ import io.vertx.fastdfs.utils.FdfsProtocol;
  * @version 3.5.0
  */
 public class FdfsClientImpl implements FdfsClient {
+	
+	private static final String POOL_LOCAL_MAP_NAME = "__vertx.FastDFS.pool";
 
 	private Vertx vertx;
 	private FdfsConnectionPool pool;
@@ -36,16 +39,16 @@ public class FdfsClientImpl implements FdfsClient {
 	private int currentTrackerIndex;
 	private final int trackerCount;
 
-	public FdfsClientImpl(Vertx vertx, FdfsClientOptions options) {
+	public FdfsClientImpl(Vertx vertx, FdfsClientOptions options, String poolName) {
 		this.vertx = vertx;
-		this.pool = new FdfsConnectionPool(vertx, new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout()), options.getPoolSize());
 		this.options = options;
+		this.pool = lookUpSharedPool(poolName);
 		this.currentTrackerIndex = 0;
 		this.trackerCount = options.getTrackers().size();
 	}
 
-	public FdfsClientImpl(Vertx vertx, JsonObject options) {
-		this(vertx, new FdfsClientOptions().fromJson(options));
+	public FdfsClientImpl(Vertx vertx, JsonObject options, String poolName) {
+		this(vertx, new FdfsClientOptions().fromJson(options), poolName);
 	}
 
 	public FdfsClientOptions options() {
@@ -502,7 +505,6 @@ public class FdfsClientImpl implements FdfsClient {
 		getTracker().setHandler(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().groups(groups -> {
-					
 
 					handler.handle(groups);
 				});
@@ -559,6 +561,20 @@ public class FdfsClientImpl implements FdfsClient {
 
 	private Future<FdfsTracker> createTracker(FdfsTrackerOptions trackerOptions) {
 		return Future.succeededFuture(new FdfsTrackerImpl(vertx, pool, trackerOptions));
+	}
+
+	private FdfsConnectionPool lookUpSharedPool(String poolName) {
+		synchronized (vertx) {
+			LocalMap<String, FdfsConnectionPool> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
+			FdfsConnectionPool pool = map.get(poolName);
+			if (pool == null) {
+				pool = new FdfsConnectionPool(vertx,
+						new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout()), options.getPoolSize());
+			} else {
+				pool.incRefCount();
+			}
+			return pool;
+		}
 	}
 
 	@Override

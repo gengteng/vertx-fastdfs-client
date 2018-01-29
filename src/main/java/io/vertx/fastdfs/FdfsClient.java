@@ -1,6 +1,7 @@
 package io.vertx.fastdfs;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -23,6 +24,8 @@ import io.vertx.fastdfs.FdfsGroupInfo;
  * @version 3.5.0
  */
 public interface FdfsClient {
+	
+	public static String DEFAULT_POOL_NAME = "FASTDFS_DEFAULT_POOL";
 
 	/**
 	   * Create a FastDFS client using the provided {@code vertx} instance.
@@ -31,8 +34,41 @@ public interface FdfsClient {
 	   * @param options the FastDFS Client options
 	   * @return the created FastDFS client
 	   */
-	public static FdfsClient create(Vertx vertx, FdfsClientOptions options) {
-		return new FdfsClientImpl(vertx, options);
+	public static FdfsClient createShared(Vertx vertx, FdfsClientOptions options) {
+		return new FdfsClientImpl(vertx, options, DEFAULT_POOL_NAME);
+	}
+	
+	/**
+	   * Create a FastDFS client using the provided {@code vertx} instance.
+	   *
+	   * @param vertx the vertx instance
+	   * @param options the FastDFS Client options
+	   * @return the created FastDFS client
+	   */
+	public static FdfsClient createShared(Vertx vertx, FdfsClientOptions options, String poolName) {
+		return new FdfsClientImpl(vertx, options, poolName);
+	}
+	
+	/**
+	   * Create a FastDFS client using the provided {@code vertx} instance.
+	   *
+	   * @param vertx the vertx instance
+	   * @param options the FastDFS Client options
+	   * @return the created FastDFS client
+	   */
+	public static FdfsClient createNonShared(Vertx vertx, FdfsClientOptions options) {
+		return new FdfsClientImpl(vertx, options, UUID.randomUUID().toString());
+	}
+	
+	/**
+	   * Create a FastDFS client using the provided {@code vertx} instance.
+	   *
+	   * @param vertx the vertx instance
+	   * @param options the FastDFS Client options
+	   * @return the created FastDFS client
+	   */
+	public static FdfsClient createShared(Vertx vertx, JsonObject options) {
+		return new FdfsClientImpl(vertx, options, DEFAULT_POOL_NAME);
 	}
 
 	/**
@@ -42,9 +78,21 @@ public interface FdfsClient {
 	   * @param options the FastDFS Client options
 	   * @return the created FastDFS client
 	   */
-	public static FdfsClient create(Vertx vertx, JsonObject options) {
-		return new FdfsClientImpl(vertx, options);
+	public static FdfsClient createShared(Vertx vertx, JsonObject options, String poolName) {
+		return new FdfsClientImpl(vertx, options, poolName);
 	}
+	
+	/**
+	   * Create a FastDFS client using the provided {@code vertx} instance.
+	   *
+	   * @param vertx the vertx instance
+	   * @param options the FastDFS Client options
+	   * @return the created FastDFS client
+	   */
+	public static FdfsClient createNonShared(Vertx vertx, JsonObject options) {
+		return new FdfsClientImpl(vertx, options, UUID.randomUUID().toString());
+	}
+
 
 	/**
 	   * upload a {@code ReadStream<Buffer>} object.
