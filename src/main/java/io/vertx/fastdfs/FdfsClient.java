@@ -43,6 +43,7 @@ public interface FdfsClient {
 	   *
 	   * @param vertx the vertx instance
 	   * @param options the FastDFS Client options
+	   * @param poolName the shared pool name
 	   * @return the created FastDFS client
 	   */
 	public static FdfsClient createShared(Vertx vertx, FdfsClientOptions options, String poolName) {
@@ -76,6 +77,7 @@ public interface FdfsClient {
 	   *
 	   * @param vertx the vertx instance
 	   * @param options the FastDFS Client options
+	   * @param poolName the shared pool name
 	   * @return the created FastDFS client
 	   */
 	public static FdfsClient createShared(Vertx vertx, JsonObject options, String poolName) {
@@ -333,6 +335,8 @@ public interface FdfsClient {
 	
 	/**
 	   * close the client
+	   * 
+	   * @param completeHandler the handler
 	   */
 	void close(Handler<AsyncResult<Void>> completeHandler);
 }
