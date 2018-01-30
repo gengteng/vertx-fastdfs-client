@@ -4,7 +4,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -54,12 +56,20 @@ public class FdfsConnectionPool implements Shareable {
 	}
 
 	public void close() {
+		close(null);
+	}
+	
+	public void close(Handler<AsyncResult<Void>> completeHandler) {
 		synchronized (vertx) {
 			--refCount;
 			
 			if (refCount == 0) {
-				client.close();
 				pools.clear();
+				client.close();
+				
+				if (completeHandler != null) {
+					completeHandler.handle(null);
+				}
 			}
 		}
 	}

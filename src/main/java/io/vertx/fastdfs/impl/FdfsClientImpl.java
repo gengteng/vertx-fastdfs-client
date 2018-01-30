@@ -3,6 +3,7 @@ package io.vertx.fastdfs.impl;
 import java.util.List;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -30,7 +31,7 @@ import io.vertx.fastdfs.utils.FdfsProtocol;
  * @version 3.5.0
  */
 public class FdfsClientImpl implements FdfsClient {
-	
+
 	private static final String POOL_LOCAL_MAP_NAME = "__vertx.FastDFS.pool";
 
 	private Vertx vertx;
@@ -38,13 +39,17 @@ public class FdfsClientImpl implements FdfsClient {
 	private FdfsClientOptions options;
 	private int currentTrackerIndex;
 	private final int trackerCount;
+	private final String poolName;
+	private LocalMap<String, FdfsConnectionPool> map;
 
 	public FdfsClientImpl(Vertx vertx, FdfsClientOptions options, String poolName) {
 		this.vertx = vertx;
 		this.options = options;
+		this.poolName = poolName;
 		this.pool = lookUpSharedPool(poolName);
 		this.currentTrackerIndex = 0;
 		this.trackerCount = options.getTrackers().size();
+		setupCloseHook();
 	}
 
 	public FdfsClientImpl(Vertx vertx, JsonObject options, String poolName) {
@@ -565,11 +570,12 @@ public class FdfsClientImpl implements FdfsClient {
 
 	private FdfsConnectionPool lookUpSharedPool(String poolName) {
 		synchronized (vertx) {
-			LocalMap<String, FdfsConnectionPool> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
+			map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
 			FdfsConnectionPool pool = map.get(poolName);
 			if (pool == null) {
 				pool = new FdfsConnectionPool(vertx,
-						new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout()), options.getPoolSize());
+						new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout()),
+						options.getPoolSize());
 			} else {
 				pool.incRefCount();
 			}
@@ -592,6 +598,26 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public void close() {
+		close(null);
+	}
+	
+	@Override
+	public void close(Handler<AsyncResult<Void>> completeHandler) {
 		pool.close();
+
+		if (map != null) {
+			map.remove(poolName);
+		}
+		
+		if (completeHandler != null) {
+			completeHandler.handle(null);
+		}
+	}
+
+	private void setupCloseHook() {
+		Context ctx = Vertx.currentContext();
+		if (ctx != null && ctx.owner() == vertx) {
+			ctx.addCloseHook(this::close);
+		}
 	}
 }

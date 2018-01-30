@@ -330,4 +330,9 @@ public interface FdfsClient {
 	   * close the client
 	   */
 	void close();
+	
+	/**
+	   * close the client
+	   */
+	void close(Handler<AsyncResult<Void>> completeHandler);
 }
