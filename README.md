@@ -7,6 +7,6 @@ Maven artifact:
 <dependency>
     <groupId>org.gteng</groupId>
     <artifactId>vertx-fastdfs-client</artifactId>
-    <version>3.5.0.1</version>
+    <version>3.5.1</version>
 </dependency>
 ```
