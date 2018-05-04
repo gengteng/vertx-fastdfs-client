@@ -34,6 +34,9 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 		 */
 		CONNECTED,
 
+		/**
+		 * Reserved.
+		 */
 		RESERVED;
 	}
 

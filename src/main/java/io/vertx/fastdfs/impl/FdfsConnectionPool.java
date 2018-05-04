@@ -11,6 +11,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 
 /**
@@ -31,12 +32,14 @@ public class FdfsConnectionPool implements Shareable {
 
 	private ConcurrentMap<SocketAddress, CircularConnectionPool> pools;
 	
-	public FdfsConnectionPool(Vertx vertx, NetClientOptions options, int poolSize) {
+	public FdfsConnectionPool(Vertx vertx, NetClientOptions options, int poolSize, LocalMap<String, FdfsConnectionPool> map, String poolName) {
 		this.vertx = vertx;
 		this.client = vertx.createNetClient(options);
 		this.poolSize = poolSize;
 		
 		this.pools = new ConcurrentHashMap<>();
+		
+		map.put(poolName, this);
 	}
 
 	public synchronized Future<FdfsConnection> get(SocketAddress address) {

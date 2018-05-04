@@ -575,7 +575,7 @@ public class FdfsClientImpl implements FdfsClient {
 			if (pool == null) {
 				pool = new FdfsConnectionPool(vertx,
 						new NetClientOptions().setConnectTimeout((int) options.getConnectTimeout()),
-						options.getPoolSize());
+						options.getPoolSize(), map, poolName);
 			} else {
 				pool.incRefCount();
 			}

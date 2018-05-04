@@ -56,6 +56,15 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 	}
 	
 	/**
+	   * Default constructor
+	   */
+	public FdfsClientOptions(JsonObject json) {
+		this();
+		
+		fromJson(json);
+	}
+	
+	/**
 	   * Copy constructor
 	   * @param other  the options to copy
 	   */
