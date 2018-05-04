@@ -56,7 +56,10 @@ public class FdfsClientOptions extends AbstractFdfsOptions {
 	}
 	
 	/**
-	   * Default constructor
+	   * Constructor using a {@code JsonObject}
+	   * 
+	   * @param json the {@code JsonObject}
+	   *
 	   */
 	public FdfsClientOptions(JsonObject json) {
 		this();
