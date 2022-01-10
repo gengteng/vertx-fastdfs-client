@@ -7,6 +7,7 @@ import java.util.List;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.SocketAddress;
@@ -26,7 +27,7 @@ import io.vertx.fastdfs.utils.FdfsUtils;
  *         <p>
  *         me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public class FdfsTrackerImpl implements FdfsTracker {
 
@@ -48,7 +49,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 	@Override
 	public FdfsTracker getStoreStorage(String group, Handler<AsyncResult<FdfsStorage>> handler) {
 
-		getConnection().setHandler(conn -> {
+		getConnection().onComplete(conn -> {
 			if (conn.succeeded()) {
 				FdfsConnection connection = conn.result();
 
@@ -73,14 +74,14 @@ public class FdfsTrackerImpl implements FdfsTracker {
 
 				FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection,
 						FdfsProtocol.TRACKER_PROTO_CMD_RESP, FdfsProtocol.TRACKER_QUERY_STORAGE_STORE_BODY_LEN, null)
-						.setHandler(recv -> {
+						.onComplete(recv -> {
 
 							connection.release();
 
 							if (recv.succeeded()) {
 								FdfsPacket resPacket = recv.result();
 								parseStorage(resPacket.getBodyBuffer(), options.getCharset(), true)
-										.compose(storageOptions -> createStorage(storageOptions)).setHandler(handler);
+										.compose(storageOptions -> createStorage(storageOptions)).onComplete(handler);
 							} else {
 								handler.handle(Future.failedFuture(recv.cause()));
 							}
@@ -110,20 +111,20 @@ public class FdfsTrackerImpl implements FdfsTracker {
 
 	@Override
 	public FdfsTracker getFetchStorage(FdfsFileId fileId, Handler<AsyncResult<FdfsStorage>> handler) {
-		getFetchOrUpdateStorage(FdfsProtocol.TRACKER_PROTO_CMD_SERVICE_QUERY_FETCH_ONE, fileId).setHandler(handler);
+		getFetchOrUpdateStorage(FdfsProtocol.TRACKER_PROTO_CMD_SERVICE_QUERY_FETCH_ONE, fileId).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsTracker getUpdateStorage(FdfsFileId fileId, Handler<AsyncResult<FdfsStorage>> handler) {
-		getFetchOrUpdateStorage(FdfsProtocol.TRACKER_PROTO_CMD_SERVICE_QUERY_UPDATE, fileId).setHandler(handler);
+		getFetchOrUpdateStorage(FdfsProtocol.TRACKER_PROTO_CMD_SERVICE_QUERY_UPDATE, fileId).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsTracker groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler) {
 
-		getConnection().setHandler(conn -> {
+		getConnection().onComplete(conn -> {
 			if (conn.succeeded()) {
 				FdfsConnection connection = conn.result();
 
@@ -131,7 +132,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 						(byte) 0, 0);
 
 				FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection,
-						FdfsProtocol.TRACKER_PROTO_CMD_RESP, 0, null).setHandler(recv -> {
+						FdfsProtocol.TRACKER_PROTO_CMD_RESP, 0, null).onComplete(recv -> {
 							connection.release();
 
 							if (recv.succeeded()) {
@@ -205,7 +206,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 	@Override
 	public FdfsTracker storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler) {
 
-		getConnection().setHandler(conn -> {
+		getConnection().onComplete(conn -> {
 			if (conn.succeeded()) {
 				FdfsConnection connection = conn.result();
 
@@ -216,7 +217,7 @@ public class FdfsTrackerImpl implements FdfsTracker {
 				bodyBuffer.setBuffer(0, Buffer.buffer(group, options.getCharset()));
 
 				FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection,
-						FdfsProtocol.TRACKER_PROTO_CMD_RESP, 0, null).setHandler(ar -> {
+						FdfsProtocol.TRACKER_PROTO_CMD_RESP, 0, null).onComplete(ar -> {
 							connection.release();
 
 							if (ar.succeeded()) {
@@ -416,9 +417,9 @@ public class FdfsTrackerImpl implements FdfsTracker {
 
 	private Future<FdfsStorage> getFetchOrUpdateStorage(byte command, FdfsFileId fileId) {
 
-		Future<FdfsStorage> futureFdfsStorage = Future.future();
+		Promise<FdfsStorage> promiseFdfsStorage = Promise.promise();
 
-		getConnection().setHandler(conn -> {
+		getConnection().onComplete(conn -> {
 			if (conn.succeeded()) {
 				FdfsConnection connection = conn.result();
 
@@ -427,16 +428,17 @@ public class FdfsTrackerImpl implements FdfsTracker {
 				FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection,
 						FdfsProtocol.TRACKER_PROTO_CMD_RESP, FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN
 								+ FdfsProtocol.FDFS_IPADDR_SIZE - 1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE,
-						null).setHandler(ar -> {
+						null).onComplete(ar -> {
 							connection.release();
 
 							if (ar.succeeded()) {
 								FdfsPacket resPacket = ar.result();
 								parseStorage(resPacket.getBodyBuffer(), options.getCharset(), true)
 										.compose(storageOptions -> createStorage(storageOptions))
-										.setHandler(futureFdfsStorage);
+										.onComplete(promiseFdfsStorage);
+
 							} else {
-								futureFdfsStorage.fail(ar.cause());
+								promiseFdfsStorage.fail(ar.cause());
 							}
 						});
 
@@ -448,11 +450,11 @@ public class FdfsTrackerImpl implements FdfsTracker {
 					});
 				}
 			} else {
-				futureFdfsStorage.fail(conn.cause());
+				promiseFdfsStorage.fail(conn.cause());
 			}
 		});
 
-		return futureFdfsStorage;
+		return promiseFdfsStorage.future();
 	}
 
 	private Future<FdfsConnection> getConnection() {
