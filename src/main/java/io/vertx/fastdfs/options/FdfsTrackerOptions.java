@@ -9,7 +9,7 @@ import io.vertx.core.net.SocketAddress;
  * <p>
  * me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public class FdfsTrackerOptions extends AbstractFdfsOptions {
 	

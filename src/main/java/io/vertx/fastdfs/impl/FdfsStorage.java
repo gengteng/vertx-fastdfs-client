@@ -14,7 +14,7 @@ import io.vertx.fastdfs.options.FdfsStorageOptions;
  * FastDFS storage.
  * 
  * @author GengTeng
- * @version 3.5.0
+ * @version 4.2
  */
 public interface FdfsStorage {
 

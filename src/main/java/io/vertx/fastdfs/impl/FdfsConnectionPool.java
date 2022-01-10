@@ -21,7 +21,7 @@ import io.vertx.core.shareddata.Shareable;
  * <p>
  * me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public class FdfsConnectionPool implements Shareable {
 	

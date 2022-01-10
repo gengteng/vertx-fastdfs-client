@@ -12,7 +12,6 @@ import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.fastdfs.impl.FdfsClientImpl;
 import io.vertx.fastdfs.impl.FdfsTracker;
-import io.vertx.fastdfs.FdfsGroupInfo;
 
 /**
  * FastDFS client.
@@ -21,7 +20,7 @@ import io.vertx.fastdfs.FdfsGroupInfo;
  * <p>
  * me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public interface FdfsClient {
 	

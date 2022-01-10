@@ -5,6 +5,7 @@ import java.time.Instant;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
@@ -29,7 +30,7 @@ import io.vertx.fastdfs.utils.FdfsUtils;
  *         <p>
  *         me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public class FdfsStorageImpl implements FdfsStorage {
 
@@ -46,38 +47,38 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage upload(ReadStream<Buffer> stream, long size, String ext,
 			Handler<AsyncResult<FdfsFileId>> handler) {
-		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, stream, size, ext).setHandler(handler);
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, stream, size, ext).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsStorage upload(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
-		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, fileFullPathName, ext).setHandler(handler);
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, fileFullPathName, ext).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsStorage upload(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
-		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, buffer, ext).setHandler(handler);
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_FILE, buffer, ext).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsStorage uploadAppender(ReadStream<Buffer> stream, long size, String ext,
 			Handler<AsyncResult<FdfsFileId>> handler) {
-		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, stream, size, ext).setHandler(handler);
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, stream, size, ext).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsStorage uploadAppender(String fileFullPathName, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
-		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, fileFullPathName, ext).setHandler(handler);
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, fileFullPathName, ext).onComplete(handler);
 		return this;
 	}
 
 	@Override
 	public FdfsStorage uploadAppender(Buffer buffer, String ext, Handler<AsyncResult<FdfsFileId>> handler) {
-		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, buffer, ext).setHandler(handler);
+		uploadFile(FdfsProtocol.STORAGE_PROTO_CMD_UPLOAD_APPENDER_FILE, buffer, ext).onComplete(handler);
 		return this;
 	}
 
@@ -127,7 +128,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			stream.resume();
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
 			}
@@ -145,7 +146,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 	@Override
 	public FdfsStorage append(String fileFullPathName, FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
 
-		LocalFile.readFile(vertx.fileSystem(), fileFullPathName).setHandler(ar -> {
+		LocalFile.readFile(vertx.fileSystem(), fileFullPathName).onComplete(ar -> {
 			if (ar.succeeded()) {
 				LocalFile localFile = ar.result();
 
@@ -203,7 +204,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -267,7 +268,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			stream.resume();
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -287,7 +288,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 	public FdfsStorage modify(String fileFullPathName, FdfsFileId fileId, long offset,
 			Handler<AsyncResult<Void>> handler) {
 
-		LocalFile.readFile(vertx.fileSystem(), fileFullPathName).setHandler(ar -> {
+		LocalFile.readFile(vertx.fileSystem(), fileFullPathName).onComplete(ar -> {
 			if (ar.succeeded()) {
 				LocalFile localFile = ar.result();
 
@@ -347,7 +348,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -408,7 +409,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -488,7 +489,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -554,7 +555,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -596,7 +597,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -637,7 +638,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -675,7 +676,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			}
 
 			return futureResponse;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -726,29 +727,29 @@ public class FdfsStorageImpl implements FdfsStorage {
 			return Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")");
 		}
 
-		Future<FdfsFileId> futureFileId = Future.future();
+		Promise<FdfsFileId> promiseFileId = Promise.promise();
 
-		LocalFile.readFile(vertx.fileSystem(), fileFullPathName).setHandler(ar -> {
+		LocalFile.readFile(vertx.fileSystem(), fileFullPathName).onComplete(ar -> {
 			if (ar.succeeded()) {
 				LocalFile localFile = ar.result();
 
-				uploadFile(command, localFile.getFile(), localFile.getSize(), ext).setHandler(upload -> {
+				uploadFile(command, localFile.getFile(), localFile.getSize(), ext).onComplete(upload -> {
 
 					localFile.closeFile();
 
 					if (upload.succeeded()) {
-						futureFileId.complete(upload.result());
+						promiseFileId.complete(upload.result());
 					} else {
-						futureFileId.fail(upload.cause());
+						promiseFileId.fail(upload.cause());
 					}
 				});
 
 			} else {
-				futureFileId.fail(ar.cause());
+				promiseFileId.fail(ar.cause());
 			}
 		});
 
-		return futureFileId;
+		return promiseFileId.future();
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, ReadStream<Buffer> stream, long size, String ext) {
@@ -760,12 +761,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 		
 		stream.pause();
 
-		Future<FdfsFileId> futureFileId = Future.future();
+		Promise<FdfsFileId> promiseFileId = Promise.promise();
 		Future<FdfsConnection> futureConn = getConnection();
 
 		futureConn.compose(connection -> {
-			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
-					null);
+			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection,
+					FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0, null);
 
 			long bodyLength = 1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + size;
 			Buffer header = FdfsProtocol.packHeader(command, (byte) 0, bodyLength);
@@ -784,7 +785,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			stream.resume();
 
 			return futurePacket;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -795,7 +796,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 				Buffer body = packet.getBodyBuffer();
 
 				if (body.length() <= FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN) {
-					futureFileId.fail(
+					promiseFileId.fail(
 							"response body length: " + body.length() + " <= " + FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN);
 					return;
 				}
@@ -805,14 +806,14 @@ public class FdfsStorageImpl implements FdfsStorage {
 				String id = FdfsUtils
 						.fdfsTrim(body.getString(FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, body.length(), charset));
 
-				futureFileId.complete(FdfsFileId.create(group, id));
+				promiseFileId.complete(FdfsFileId.create(group, id));
 			} else {
-				futureFileId.fail(ar.cause());
+				promiseFileId.fail(ar.cause());
 			}
 
 		});
 
-		return futureFileId;
+		return promiseFileId.future();
 	}
 
 	private Future<FdfsFileId> uploadFile(byte command, Buffer buffer, String ext) {
@@ -822,12 +823,12 @@ public class FdfsStorageImpl implements FdfsStorage {
 			return Future.failedFuture("ext is too long ( greater than " + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN + ")");
 		}
 
-		Future<FdfsFileId> futureFileId = Future.future();
+		Promise<FdfsFileId> promiseFileId = Promise.promise();
 		Future<FdfsConnection> futureConn = getConnection();
 
 		futureConn.compose(connection -> {
-			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection, FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,
-					null);
+			Future<FdfsPacket> futurePacket = FdfsProtocol.recvPacket(vertx, options.getNetworkTimeout(), connection,
+					FdfsProtocol.STORAGE_PROTO_CMD_RESP, 0,null);
 
 			long bodyLength = 1 + FdfsProtocol.FDFS_PROTO_PKG_LEN_SIZE + FdfsProtocol.FDFS_FILE_EXT_NAME_MAX_LEN
 					+ buffer.length();
@@ -849,7 +850,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 			connection.write(bodyBuffer);
 
 			return futurePacket;
-		}).setHandler(ar -> {
+		}).onComplete(ar -> {
 			
 			if (futureConn.succeeded()) {
 				futureConn.result().release();
@@ -860,7 +861,7 @@ public class FdfsStorageImpl implements FdfsStorage {
 				Buffer resBodyBuffer = packet.getBodyBuffer();
 
 				if (resBodyBuffer.length() <= FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN) {
-					futureFileId.fail("response body length: " + resBodyBuffer.length() + " <= "
+					promiseFileId.fail("response body length: " + resBodyBuffer.length() + " <= "
 							+ FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN);
 					return;
 				}
@@ -871,14 +872,14 @@ public class FdfsStorageImpl implements FdfsStorage {
 				String id = FdfsUtils.fdfsTrim(
 						resBodyBuffer.getString(FdfsProtocol.FDFS_GROUP_NAME_MAX_LEN, resBodyBuffer.length(), charset));
 
-				futureFileId.complete(FdfsFileId.create(group, id));
+				promiseFileId.complete(FdfsFileId.create(group, id));
 			} else {
-				futureFileId.fail(ar.cause());
+				promiseFileId.fail(ar.cause());
 			}
 
 		});
 
-		return futureFileId;
+		return promiseFileId.future();
 	}
 
 	private static final class LocalFile {

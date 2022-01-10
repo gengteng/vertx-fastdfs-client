@@ -3,6 +3,7 @@ package io.vertx.fastdfs.utils;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +22,7 @@ import io.vertx.fastdfs.impl.FdfsConnection;
  *         <p>
  *         me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public final class FdfsProtocol {
 
@@ -178,10 +179,10 @@ public final class FdfsProtocol {
 	public static Future<FdfsPacket> recvPacket(Vertx vertx, long timeoutMillis, FdfsConnection connection, byte expectedCommand, long expectedBodyLength,
 			WriteStream<Buffer> bodyWriteStream) {
 
-		return Future.future(future -> {
+		return Future.future(promise -> {
 
 			Buffer headerBuffer = Buffer.buffer(HEADER_BYTE_LENGTH);
-			Future<Long> futureBodyLength = Future.future();
+			Promise<Long> promiseBodyLength = Promise.promise();
 			WrappedBuffer bodyBuffer = new WrappedBuffer();
 			AtomicLong bodyReceived = new AtomicLong();
 			AtomicLong lastReceiveTime = new AtomicLong(System.currentTimeMillis());
@@ -191,16 +192,16 @@ public final class FdfsProtocol {
 					
 					vertx.cancelTimer(l);
 					
-					if (!future.isComplete()) {
-						if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
-							future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
+					if (!promise.future().isComplete()) {
+						if (promiseBodyLength.future().isComplete() && promiseBodyLength.future().result() == bodyReceived.get()) {
+							promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result())
 									.setBodyBuffer(bodyBuffer.buffer()));
 						} else {
-							future.fail(new FdfsException("receive timeout"));
+							promise.fail(new FdfsException("receive timeout"));
 						}
 					}
 				} else {
-					if (future.isComplete()) {
+					if (promise.future().isComplete()) {
 						vertx.cancelTimer(l);
 					}
 				}
@@ -210,22 +211,23 @@ public final class FdfsProtocol {
 				
 				lastReceiveTime.set(System.currentTimeMillis());
 
-				if (!futureBodyLength.isComplete()) {
+				if (!promiseBodyLength.future().isComplete()) {
 					final long currentLength = headerBuffer.length() + buffer.length();
 					final int lengthToFillHeader = HEADER_BYTE_LENGTH - headerBuffer.length();
 					if (currentLength >= HEADER_BYTE_LENGTH) {
 						headerBuffer.appendBuffer(buffer, 0, lengthToFillHeader);
 
-						parseHeader(headerBuffer, expectedCommand, expectedBodyLength).setHandler(futureBodyLength); // 非异步，直接返回
+						// 非异步，直接返回
+						parseHeader(headerBuffer, expectedCommand, expectedBodyLength).onComplete(promiseBodyLength);
 
-						if (!futureBodyLength.succeeded()) {
-							future.fail(futureBodyLength.cause());
+						if (!promiseBodyLength.future().succeeded()) {
+							promise.fail(promiseBodyLength.future().cause());
 							// closeSocket(socket);
 							return;
 						}
 
-						if (futureBodyLength.result() == 0) {
-							future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result()));
+						if (promiseBodyLength.future().result() == 0) {
+							promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result()));
 							// closeSocket(socket);
 							return;
 						}
@@ -242,8 +244,8 @@ public final class FdfsProtocol {
 								}
 
 								bodyReceived.addAndGet(bodytoWrite.length());
-								if (bodyReceived.get() >= futureBodyLength.result()) {
-									future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result()));
+								if (bodyReceived.get() >= promiseBodyLength.future().result()) {
+									promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result()));
 									// closeSocket(socket);
 								}
 							}
@@ -251,15 +253,15 @@ public final class FdfsProtocol {
 							return;
 						}
 
-						bodyBuffer.allocate(futureBodyLength.result().intValue());
+						bodyBuffer.allocate(promiseBodyLength.future().result().intValue());
 
 						if (currentLength > HEADER_BYTE_LENGTH) {
 							int lengthToFillBody = buffer.length() - lengthToFillHeader;
 							bodyBuffer.appendBuffer(buffer, lengthToFillHeader, lengthToFillBody);
 							bodyReceived.addAndGet(lengthToFillBody);
 
-							if (bodyBuffer.length() >= futureBodyLength.result()) {
-								future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
+							if (bodyBuffer.length() >= promiseBodyLength.future().result()) {
+								promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result())
 										.setBodyBuffer(bodyBuffer.buffer()));
 								// closeSocket(socket);
 							}
@@ -279,8 +281,8 @@ public final class FdfsProtocol {
 						}
 
 						bodyReceived.addAndGet(buffer.length());
-						if (bodyReceived.get() >= futureBodyLength.result()) {
-							future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result()));
+						if (bodyReceived.get() >= promiseBodyLength.future().result()) {
+							promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result()));
 							// closeSocket(socket);
 						}
 						return;
@@ -289,8 +291,8 @@ public final class FdfsProtocol {
 					bodyBuffer.appendBuffer(buffer);
 					bodyReceived.addAndGet(buffer.length());
 					// 读取完毕
-					if (bodyBuffer.length() >= futureBodyLength.result()) {
-						future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
+					if (bodyBuffer.length() >= promiseBodyLength.future().result()) {
+						promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result())
 								.setBodyBuffer(bodyBuffer.buffer()));
 						// closeSocket(socket);
 					}
@@ -298,23 +300,25 @@ public final class FdfsProtocol {
 			});
 
 			connection.exceptionHandler(e -> {
-				if (!future.isComplete()) {
-					if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
-						future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
+				if (!promise.future().isComplete()) {
+					if (promiseBodyLength.future().isComplete()
+							&& promiseBodyLength.future().result() == bodyReceived.get()) {
+						promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result())
 								.setBodyBuffer(bodyBuffer.buffer()));
 					} else {
-						future.fail(new FdfsException(e));
+						promise.fail(new FdfsException(e));
 					}
 				}
 			});
 
 			connection.endHandler(v -> {
-				if (!future.isComplete()) {
-					if (futureBodyLength.isComplete() && futureBodyLength.result() == bodyReceived.get()) {
-						future.complete(new FdfsPacket().setBodyLength(futureBodyLength.result())
+				if (!promise.future().isComplete()) {
+					if (promiseBodyLength.future().isComplete()
+							&& promiseBodyLength.future().result() == bodyReceived.get()) {
+						promise.complete(new FdfsPacket().setBodyLength(promiseBodyLength.future().result())
 								.setBodyBuffer(bodyBuffer.buffer()));
 					} else {
-						future.fail(new FdfsException("socket closed before recv complete"));
+						promise.fail(new FdfsException("socket closed before recv complete"));
 					}
 				}
 			});

@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetSocket;
@@ -40,7 +41,7 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 		RESERVED;
 	}
 
-	private final Queue<Future<FdfsConnection>> pending = new LinkedList<>();
+	private final Queue<Promise<FdfsConnection>> pending = new LinkedList<>();
 	private final AtomicReference<State> state = new AtomicReference<>(State.DISCONNECTED);
 
 	private volatile NetSocket socket;
@@ -56,32 +57,33 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 	}
 
 	public Future<FdfsConnection> get() {
-		Future<FdfsConnection> future = Future.future();
+
+		Promise<FdfsConnection> promise = Promise.promise();
 
 		switch (state.get()) {
 		case RESERVED:
-			pending.add(future);
+			pending.add(promise);
 			break;
 		case CONNECTING:
-			pending.add(future);
+			pending.add(promise);
 			break;
 		case CONNECTED:
 			if (this.state.compareAndSet(State.CONNECTED, State.RESERVED)) {
-				future.complete(this);
+				promise.complete(this);
 			} else {
-				pending.add(future);
+				pending.add(promise);
 			}
 			break;
 		case DISCONNECTED:
 			connect(ar -> {
 				if (ar.succeeded()) {
 					if (this.state.get() == State.CONNECTED) {
-						completeFuture(future);
+						completePromise(promise);
 					} else {
-						pending.add(future);
+						pending.add(promise);
 					}
 				} else {
-					future.fail(ar.cause());
+					promise.fail(ar.cause());
 				}
 			});
 			break;
@@ -89,7 +91,7 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 			break;
 		}
 
-		return future;
+		return promise.future();
 	}
 	
 	public SocketAddress address() {
@@ -121,24 +123,24 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 	}
 	
 	private void removePending() {
-		Future<FdfsConnection> future = null;
-		
-		if ((future = pending.poll()) != null) {
-			completeFuture(future);
+		Promise<FdfsConnection> promise = null;
+
+		if ((promise = pending.poll()) != null) {
+			completePromise(promise);
 		}
 	}
 	
 	private void cleanPending(Throwable e) {
-		Future<FdfsConnection> future = null;
-		
-		while ((future = pending.poll()) != null) {
-			future.fail(e);
+		Promise<FdfsConnection> promise = null;
+
+		while ((promise = pending.poll()) != null) {
+			promise.fail(e);
 		}
 	}
-	
-	private void completeFuture(Future<FdfsConnection> future) {
+
+	private void completePromise(Promise<FdfsConnection> promise) {
 		this.state.set(State.RESERVED);
-		future.complete(this);
+		promise.complete(this);
 	}
 	
 	private FdfsConnection connect(Handler<AsyncResult<FdfsConnection>> handler) {
@@ -196,9 +198,9 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 	}
 
 	@Override
-	public FdfsConnection write(Buffer data) {
-		socket.write(data);
-		return this;
+	public Future<Void> write(Buffer buffer) {
+		socket.write(buffer);
+		return null;
 	}
 
 	@Override
@@ -250,8 +252,9 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 	 * Calls {@link #close()}
 	 */
 	@Override
-	public void end() {
+	public Future<Void> end() {
 		close();
+		return null;
 	}
 
 	/**
@@ -301,4 +304,31 @@ public class FdfsConnection implements ReadStream<Buffer>, WriteStream<Buffer> {
 		socket.setWriteQueueMaxSize(maxSize);
 		return this;
 	}
+
+	////
+	@Override
+	public ReadStream<Buffer> fetch(long l) {
+		return null;
+	}
+
+	@Override
+	public void write(Buffer buffer, Handler<AsyncResult<Void>> handler) {
+
+	}
+
+	@Override
+	public Future<Void> end(Buffer data) {
+		return null;
+	}
+
+	@Override
+	public void end(Handler<AsyncResult<Void>> handler) {
+
+	}
+
+	@Override
+	public void end(Buffer data, Handler<AsyncResult<Void>> handler) {
+
+	}
+
 }

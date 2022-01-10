@@ -6,6 +6,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -28,7 +29,7 @@ import io.vertx.fastdfs.utils.FdfsProtocol;
  *         <p>
  *         me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public class FdfsClientImpl implements FdfsClient {
 
@@ -70,7 +71,7 @@ public class FdfsClientImpl implements FdfsClient {
 			return this;
 		}
 
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
 					if (storage.succeeded()) {
@@ -98,7 +99,7 @@ public class FdfsClientImpl implements FdfsClient {
 			return this;
 		}
 
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
 					if (storage.succeeded()) {
@@ -126,7 +127,7 @@ public class FdfsClientImpl implements FdfsClient {
 			return this;
 		}
 
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
 					if (storage.succeeded()) {
@@ -155,7 +156,7 @@ public class FdfsClientImpl implements FdfsClient {
 			return this;
 		}
 
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
 					if (storage.succeeded()) {
@@ -183,7 +184,7 @@ public class FdfsClientImpl implements FdfsClient {
 			return this;
 		}
 
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
 					if (storage.succeeded()) {
@@ -211,7 +212,7 @@ public class FdfsClientImpl implements FdfsClient {
 			return this;
 		}
 
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(storage -> {
 					if (storage.succeeded()) {
@@ -233,7 +234,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient append(ReadStream<Buffer> stream, long size, FdfsFileId fileId,
 			Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
 					if (storage.succeeded()) {
@@ -254,7 +255,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient append(String fileFullPathName, FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
 					if (storage.succeeded()) {
@@ -275,7 +276,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient append(Buffer buffer, FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
 					if (storage.succeeded()) {
@@ -297,7 +298,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient modify(ReadStream<Buffer> stream, long size, FdfsFileId fileId, long offset,
 			Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
 					if (storage.succeeded()) {
@@ -319,7 +320,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient modify(String fileFullPathName, FdfsFileId fileId, long offset,
 			Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
 					if (storage.succeeded()) {
@@ -340,7 +341,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient modify(Buffer buffer, FdfsFileId fileId, long offset, Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getStoreStorage(fileId.group(), storage -> {
 					if (storage.succeeded()) {
@@ -362,7 +363,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient download(FdfsFileId fileId, WriteStream<Buffer> stream, long offset, long bytes,
 			Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getFetchStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -384,7 +385,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient download(FdfsFileId fileId, String fileFullPathName, long offset, long bytes,
 			Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getFetchStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -405,7 +406,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient download(FdfsFileId fileId, long offset, long bytes, Handler<AsyncResult<Buffer>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getFetchStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -427,7 +428,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient setMetaData(FdfsFileId fileId, JsonObject metaData, byte flag,
 			Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -447,7 +448,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient getMetaData(FdfsFileId fileId, Handler<AsyncResult<JsonObject>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -467,7 +468,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient delete(FdfsFileId fileId, Handler<AsyncResult<Void>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -487,7 +488,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient fileInfo(FdfsFileId fileId, Handler<AsyncResult<FdfsFileInfo>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().getUpdateStorage(fileId, storage -> {
 					if (storage.succeeded()) {
@@ -507,7 +508,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient groups(Handler<AsyncResult<List<FdfsGroupInfo>>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().groups(groups -> {
 
@@ -522,7 +523,7 @@ public class FdfsClientImpl implements FdfsClient {
 
 	@Override
 	public FdfsClient storages(String group, Handler<AsyncResult<List<FdfsStorageInfo>>> handler) {
-		getTracker().setHandler(tracker -> {
+		getTracker().onComplete(tracker -> {
 			if (tracker.succeeded()) {
 				tracker.result().storages(group, storages -> {
 					handler.handle(storages);
@@ -540,24 +541,25 @@ public class FdfsClientImpl implements FdfsClient {
 	}
 
 	private Future<FdfsTracker> getTracker(int startIndex, int lastIndex) {
-		Future<FdfsTracker> futureTracker = Future.future();
+
+		Promise<FdfsTracker> promiseTracker = Promise.promise();
 
 		FdfsTrackerOptions trackerOptions = getTrackerOptions(startIndex);
 
-		createTracker(trackerOptions).setHandler(connResult -> {
+		createTracker(trackerOptions).onComplete(connResult -> {
 			if (connResult.succeeded()) {
 				this.currentTrackerIndex = startIndex;
-				futureTracker.complete(connResult.result());
+				promiseTracker.complete(connResult.result());
 			} else {
 				if (startIndex == lastIndex) {
-					futureTracker.fail(connResult.cause());
+					promiseTracker.fail(connResult.cause());
 				} else {
-					getTracker((startIndex + 1) % trackerCount, lastIndex).setHandler(futureTracker);
+					getTracker((startIndex + 1) % trackerCount, lastIndex).onComplete(promiseTracker);
 				}
 			}
 		});
 
-		return futureTracker;
+		return promiseTracker.future();
 	}
 
 	private FdfsTrackerOptions getTrackerOptions(int index) {
@@ -586,7 +588,7 @@ public class FdfsClientImpl implements FdfsClient {
 	@Override
 	public FdfsClient getTracker(Handler<AsyncResult<FdfsTracker>> handler) {
 
-		getTracker().setHandler(handler);
+		getTracker().onComplete(handler);
 
 		return this;
 	}
@@ -617,7 +619,9 @@ public class FdfsClientImpl implements FdfsClient {
 	private void setupCloseHook() {
 		Context ctx = Vertx.currentContext();
 		if (ctx != null && ctx.owner() == vertx) {
-			ctx.addCloseHook(this::close);
+			// ctx.addCloseHook(this::close);
+			// TODO::
+			// close();
 		}
 	}
 }

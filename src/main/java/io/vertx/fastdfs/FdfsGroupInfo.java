@@ -7,7 +7,7 @@ package io.vertx.fastdfs;
  * <p>
  * me@gteng.org
  * 
- * @version 3.5.0
+ * @version 4.2
  */
 public final class FdfsGroupInfo {
 	

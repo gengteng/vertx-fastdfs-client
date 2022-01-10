@@ -13,7 +13,7 @@ import io.vertx.fastdfs.options.FdfsTrackerOptions;
  * FastDFS tracker.
  * 
  * @author GengTeng
- * @version 3.5.0
+ * @version 4.2
  */
 public interface FdfsTracker {
 
